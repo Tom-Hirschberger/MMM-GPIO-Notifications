@@ -1,0 +1,24 @@
+{
+  "name": "MMM-GPIO-Notifications",
+  "version": "0.0.1",
+  "description": "",
+  "main": "MMM-GPIO-Notifications.js",
+  "devDependencies": {},
+  "scripts": {
+    "postinstall": "node_modules/.bin/electron-rebuild -e ../../node_modules/electron"
+  },
+  "dependencies": {
+    "onoff": "latest",
+    "electron-rebuild": "^1.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Tom-Hirschberger/MMM-GPIO-Notifications.git"
+  },
+  "author": "Thomas Hirschberger",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Tom-Hirschberger/MMM-GPIO-Notifications/issues"
+  },
+  "homepage": "https://github.com/Tom-Hirschberger/MMM-GPIO-Notifications/#readme"
+}
