@@ -47,14 +47,14 @@ module.exports = NodeHelper.create({
                 console.log(self.name+": Registering pin: "+cur_pin);
                 self.gpio[String(cur_pin)] = new Gpio(cur_pin, 'in', 'both', {debounceTimeout: self.config[String(cur_pin)].gpio_debounce});
 
-                self.gpio[String(cur_pin)].watch(function (err, value) {
-                    for (cur_in_pin in self.config){
-                        if(self.gpio[String(cur_pin)].readSync() == self.config[String(cur_in_pin)].gpio_state){
-                            console.log(self.name+": Watched pin: "+cur_in_pin+ " triggered!");
-                            self.sendAllNotifications(cur_in_pin);
-                        }
-                    }
-                });
+		(function (gpiox, the_cur_pin) {
+			gpiox.watch(function(err,value){
+				if(value == self.config[String(the_cur_pin)].gpio_state){
+					console.log(self.name+": Watched pin: "+the_cur_pin+" triggered!");
+					self.sendAllNotifications(the_cur_pin);
+				}
+			});
+		})(self.gpio[String(cur_pin)],cur_pin);
             }
 
             self.started = true;
