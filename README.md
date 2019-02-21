@@ -1,7 +1,7 @@
 # MMM-GPIO-Notifications
 MMM-GPIO-Notifications is a module for the [MagicMirror](https://github.com/MichMich/MagicMirror) project by [Michael Teeuw](https://github.com/MichMich).
 
-It watches the state of an configurable GPIO-Pin an sends configurable notifications (with optional payload) if the state of the pin changes to the configured value.
+It watches the state of configurable GPIO-Pins and sends configurable notifications (with optional payload) if the state of the pins change to the configured value.
 
 ## Installation
     cd ~/MagicMirror/modules
