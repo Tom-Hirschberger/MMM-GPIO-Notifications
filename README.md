@@ -5,7 +5,7 @@ It watches the state of configurable GPIO-Pins and sends configurable notificati
 
 ## Installation
     cd ~/MagicMirror/modules
-    git clone 
+    git clone git@github.com:Tom-Hirschberger/MMM-GPIO-Notifications.git
     cd MMM-GPIO-Notifications
     npm install
 
