@@ -16,25 +16,36 @@ module.exports = NodeHelper.create({
 
   sendAllNotifications: function (curPin) {
     const self = this
+    const curTimestamp = Date.now()
     if (curPin) {
-      console.log(self.name + ': Sending notifications of pin ' + curPin + '...')
-      if (self.config[String(curPin)]) {
-        var curNotifications = self.config[String(curPin)].notifications
-        var curLength = curNotifications.length
-        for (var i = 0; i < curLength; i++) {
-          var curNotification = curNotifications[i]
-          self.sendSocketNotification(curNotification.notification, curNotification.payload)
+      if ((curTimestamp - self.lastMessures[String(curPin)]) > self.config[String(curPin)].delay){
+        console.log(self.name + ': Sending notifications of pin ' + curPin + '...')
+        self.lastMessures[String(curPin)] = curTimestamp
+        if (self.config[String(curPin)]) {
+          var curNotifications = self.config[String(curPin)].notifications
+          var curLength = curNotifications.length
+          for (var i = 0; i < curLength; i++) {
+            var curNotification = curNotifications[i]
+            self.sendSocketNotification(curNotification.notification, curNotification.payload)
+          }
         }
+      } else {
+        console.log(self.name + ': Skipping pin ' + curPin + ' because the delay is not exceeded !')
       }
     } else {
       console.log(self.name + ': Sending notifications of all pins...')
       for (curPin in self.config) {
-        console.log(self.name + ': Sending notifications of pin ' + curPin + '...')
-        curNotifications = self.config[String(curPin)].notifications
-        curLength = curNotifications.length
-        for (i = 0; i < curLength; i++) {
-          curNotification = curNotifications[i]
-          self.sendSocketNotification(curNotification.notification, curNotification.payload)
+        if ( (curTimestamp - self.lastMessures[String(curPin)]) > self.config[String(curPin)].delay){
+          console.log(self.name + ': Sending notifications of pin ' + curPin + '...')
+          self.lastMessures[String(curPin)] = curTimestamp
+          curNotifications = self.config[String(curPin)].notifications
+          curLength = curNotifications.length
+          for (i = 0; i < curLength; i++) {
+            curNotification = curNotifications[i]
+            self.sendSocketNotification(curNotification.notification, curNotification.payload)
+          }
+        } else {
+          console.log(self.name + ': Skipping pin ' + curPin + ' because the delay is not exceeded !')
         }
       }
     }
@@ -44,12 +55,18 @@ module.exports = NodeHelper.create({
     const self = this
     if (notification === 'CONFIG' && self.started === false) {
       self.config = payload
+      self.lastMessures = []
 
       if (Gpio.accessible) {
         self.gpio = []
         for (var curPin in self.config) {
           console.log(self.name + ': Registering pin: ' + curPin)
           self.gpio[String(curPin)] = new Gpio(curPin, 'in', 'both', { debounceTimeout: self.config[String(curPin)].gpio_debounce });
+          self.lastMessures[String(curPin)] = -1
+          if (typeof self.config[String(curPin)].delay === 'undefined'){
+            console.log(self.name + ': Setting delay of pin '+curPin+' to default value 0!')
+            self.config[String(curPin)].delay = 0
+          }
 
           (function (gpiox, theCurPin) {
             gpiox.watch(function (err, value) {

@@ -19,6 +19,7 @@ To use the module insert it in the config.js file. Here is an example:
             '17': {
               gpio_state: 1,
               gpio_debounce: 10,
+              delay: 1000,
               notifications: [
                 {
                   notification: 'USER_PRESENCE',
@@ -49,4 +50,5 @@ To use the module insert it in the config.js file. Here is an example:
 | THE_KEY | the number of the pin you want to watch. MAKE SURE TO ADD IT IN '' | String | |
 | gpio_state | the state of the gpio pin on which the notifications should be send | Integer | |
 | gpio_debounce | the debounce value to use for the gpio event handling; if the pin changes the state during this period after the last event the new event will be ignored | Integer | |
+| delay | time in milliseconds till the notifications will be send again altough the pin has been triggered | Integer | 0 |
 | notifications | An array of natifications. Each notification needs a key "notification", the payload is optional | Array |
