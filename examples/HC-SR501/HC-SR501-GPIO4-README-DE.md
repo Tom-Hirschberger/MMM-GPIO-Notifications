@@ -32,7 +32,7 @@ Der Sensor kann mit einer Spannung von 5V bis 20V (teilweise nur 12V) betrieben 
 Ein entsprechendes Bild ist in diesem Ordner enthalten (HC-SR501-GPIO4.jpg).
 VCC wird mit Pin 2, GND mit 6, Trigger mit 7 verbunden.
 
-![alt text](https://github.com/Tom-Hirschberger/MMM-GPIO-Notifications/blob/master/examples/HC-SR501-GPIO4.jpg "HC-SR501-GPIO4.jpg")
+![alt text](https://github.com/Tom-Hirschberger/MMM-GPIO-Notifications/blob/master/examples/HC-SR501/HC-SR501-GPIO4.jpg "HC-SR501-GPIO4.jpg")
 
 
 ## Module installieren ##

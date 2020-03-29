@@ -32,7 +32,7 @@ The sensor can be used with voltages between 5V and 20V (sometimes only 12V). We
 
 In the following picture VCC is connected to pin 2, GND to 6 and trigger to 7.
 
-![alt text](https://github.com/Tom-Hirschberger/MMM-GPIO-Notifications/blob/master/examples/HC-SR501-GPIO4.jpg "HC-SR501-GPIO4.jpg")
+![alt text](https://github.com/Tom-Hirschberger/MMM-GPIO-Notifications/blob/master/examples/HC-SR501/HC-SR501-GPIO4.jpg "HC-SR501-GPIO4.jpg")
 
 
 ## Installing the modules ##
