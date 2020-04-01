@@ -19,4 +19,10 @@ Module.register('MMM-GPIO-Notifications', {
   socketNotificationReceived: function (notification, payload) {
     this.sendNotification(notification, payload)
   },
+
+  notificationReceived: function (notification, payload) {
+    if (notification === 'GPIO_SEND_NOTIFICATIONS') {
+      this.sendSocketNotification(notification, payload)
+    }
+  },
 })
