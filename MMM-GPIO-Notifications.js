@@ -21,7 +21,9 @@ Module.register('MMM-GPIO-Notifications', {
   },
 
   notificationReceived: function (notification, payload) {
-    if (notification === 'GPIO_SEND_NOTIFICATIONS') {
+    if ((notification === 'GPIO_SEND_NOTIFICATIONS') ||
+       (notification === 'CHANGED_PROFILE')
+    ){
       this.sendSocketNotification(notification, payload)
     }
   },

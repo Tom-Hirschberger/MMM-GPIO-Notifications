@@ -12,6 +12,8 @@ module.exports = NodeHelper.create({
 
   start: function () {
     this.started = false
+    this.currentProfile = ''
+    this.currentProfilePattern = new RegExp('.*')
   },
 
   sendAllNotifications: function (curPin) {
@@ -26,7 +28,13 @@ module.exports = NodeHelper.create({
           var curLength = curNotifications.length
           for (var i = 0; i < curLength; i++) {
             var curNotification = curNotifications[i]
-            self.sendSocketNotification(curNotification.notification, curNotification.payload)
+            console.log("CurProfile: "+self.currentProfile)
+            console.log("CurProfileString: "+curNotification.profiles)
+            if((typeof curNotification.profiles === 'undefined') || (self.currentProfilePattern.test(curNotification.profiles))){
+              self.sendSocketNotification(curNotification.notification, curNotification.payload)
+            } else {
+              console.log(self.name + ': Skipped notifcation '+curNotification.notification+ ' because it is not active in the current profile!')
+            }
           }
         }
       } else {
@@ -42,7 +50,11 @@ module.exports = NodeHelper.create({
           curLength = curNotifications.length
           for (i = 0; i < curLength; i++) {
             curNotification = curNotifications[i]
-            self.sendSocketNotification(curNotification.notification, curNotification.payload)
+            if((typeof curNotification.profiles === 'undefined') || (self.currentProfilePattern.test(curNotification.profiles))){
+              self.sendSocketNotification(curNotification.notification, curNotification.payload)
+            } else {
+              console.log(self.name + ': Skipped notifcation '+curNotification.notification+ ' because it is not active in the current profile!')
+            }
           }
         } else {
           console.log(self.name + ': Skipping pin ' + curPin + ' because the delay is not exceeded !')
@@ -93,6 +105,11 @@ module.exports = NodeHelper.create({
         }
       } else {
         self.sendAllNotifications()
+      }
+    } else if (notification === 'CHANGED_PROFILE'){
+      if(typeof payload.to !== 'undefined'){
+        self.currentProfile = payload.to
+        self.currentProfilePattern = new RegExp('\\b'+payload.to+'\\b')
       }
     } else {
       console.log(this.name + ': Received Notification: ' + notification)
