@@ -24,7 +24,7 @@ To use the module insert it in the config.js file. Here is an example:
               notifications: [
                 {
                   notification: 'USER_PRESENCE',
-                  payload: { true }
+                  payload: true
                 },
                 {
                   notification: 'SCREEN_ON',
