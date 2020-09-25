@@ -32,6 +32,8 @@ Der Sensor kann mit einer Spannung von 5V bis 20V (teilweise nur 12V) betrieben 
 Ein entsprechendes Bild ist in diesem Ordner enthalten (HC-SR501-GPIO4.jpg).
 VCC wird mit Pin 2, GND mit 6, Trigger mit 7 verbunden.
 
+Bitte unbedingt darauf achten, dass die Leitung von Pin 2 mit dem "+" Pol und Pin 6 mit dem GND des Sensors verbunden wird. Andernfalls kann der Sensor zestört werden. Das Bild zeigt ein typisches Beispiel, bei manchen Sensoren sind die Pole vertauscht.
+
 ![alt text](https://github.com/Tom-Hirschberger/MMM-GPIO-Notifications/blob/master/examples/HC-SR501/HC-SR501-GPIO4.jpg "HC-SR501-GPIO4.jpg")
 
 

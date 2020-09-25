@@ -31,6 +31,7 @@ The potentiometer which is closer to the mid of the sensor controls the sensivit
 The sensor can be used with voltages between 5V and 20V (sometimes only 12V). We need to connect the VCC, GND and the signal (trigger).
 
 In the following picture VCC is connected to pin 2, GND to 6 and trigger to 7.
+Be sure to connect pin 2 to VCC and pin 6 to GND. The figure is only an example and at some sensors the pins are switched. Swapping the pins may damage the sensor.
 
 ![alt text](https://github.com/Tom-Hirschberger/MMM-GPIO-Notifications/blob/master/examples/HC-SR501/HC-SR501-GPIO4.jpg "HC-SR501-GPIO4.jpg")
 
