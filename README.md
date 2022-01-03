@@ -1,7 +1,7 @@
 # MMM-GPIO-Notifications
 MMM-GPIO-Notifications is a module for the [MagicMirror](https://github.com/MichMich/MagicMirror) project by [Michael Teeuw](https://github.com/MichMich).
 
-:warning: elecron-rebuild issues: Currently i am unable to run the module with node versions > 14. I could not find the exact cause yet but for my only downgrading node from 16 to 14.18.2 (sudo npm install -g n; sudo n 14.18.2) fixed the issue.
+:warning: elecron-rebuild issues: Currently i am unable to run the module with node versions > 14.17.5. I could not find the exact cause yet but for my only downgrading node from 16 to 14.17.5 (sudo npm install -g n; sudo n 14.17.5) fixed the issue.
 
 It watches the state of configurable GPIO-Pins and sends configurable notifications (with optional payload) if the state of the pins change to the configured value. If you configure a delay no notifcations will be send for the pin after a sucessful trigger for this time.
 As a new feature you can now set profiles for each notifcation. Because of this you can use the same sensor for different actions in different profiles (i.e. different pages).
