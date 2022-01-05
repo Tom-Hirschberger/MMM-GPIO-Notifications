@@ -1,6 +1,6 @@
 {
   "name": "MMM-GPIO-Notifications",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "main": "MMM-GPIO-Notifications.js",
   "devDependencies": {},
@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "onoff": "latest",
-    "electron-rebuild": "latest",
     "magicmirror-rebuild": "latest"
   },
   "repository": {
