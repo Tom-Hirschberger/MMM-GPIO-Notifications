@@ -9,15 +9,20 @@ As a new feature you can now set profiles for each notifcation. Because of this 
 
 ## Installation
 
+The postinstallation will take some time. Please wait for it to finish!
+
+```bash
     cd ~/MagicMirror/modules
     git clone https://github.com/Tom-Hirschberger/MMM-GPIO-Notifications.git
     cd MMM-GPIO-Notifications
     npm install
+```
 
 ## Configuration
 
 To use the module insert it in the config.js file. Here is an example:
 
+```json5
     {
         module: 'MMM-GPIO-Notifications',
         config: {
@@ -49,6 +54,7 @@ To use the module insert it in the config.js file. Here is an example:
             }
         }
     },
+```
 
 | Option        | Description                                                                                                                                               | Type    | Default |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------- |
