@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "onoff": "latest",
-    "magicmirror-rebuild": "latest"
+    "magicmirror-rebuild": "1.0.5"
   },
   "repository": {
     "type": "git",
