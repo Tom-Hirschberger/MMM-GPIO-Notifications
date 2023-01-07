@@ -5,11 +5,11 @@
   "main": "MMM-GPIO-Notifications.js",
   "devDependencies": {},
   "scripts": {
-    "postinstall": "node_modules/.bin/MagicMirror-rebuild"
+    "postinstall": "node_modules/.bin/electron-rebuild"
   },
   "dependencies": {
     "onoff": "latest",
-    "magicmirror-rebuild": "latest"
+    "@electron/rebuild": "^3.2.10"
   },
   "repository": {
     "type": "git",
