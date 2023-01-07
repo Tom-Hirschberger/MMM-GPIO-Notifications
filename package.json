@@ -1,15 +1,14 @@
 {
   "name": "MMM-GPIO-Notifications",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "",
   "main": "MMM-GPIO-Notifications.js",
   "devDependencies": {},
   "scripts": {
-    "postinstall": "node_modules/.bin/MagicMirror-rebuild"
+    "postinstall": "./postinstall"
   },
   "dependencies": {
-    "onoff": "latest",
-    "magicmirror-rebuild": "latest"
+    "onoff": "latest"
   },
   "repository": {
     "type": "git",
