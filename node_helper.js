@@ -101,7 +101,6 @@ module.exports = NodeHelper.create({
             self.name + ": Sending notifications of pin " + curPin + "..."
           );
           self.lastMessures[String(curPin)] = curTimestamp;
-          //FIXME: Add notifications_low and notifications_high
           let curNotifications = []
           if (typeof self.config[String(curPin)].notifications !== "undefined"){
             curNotification = curNotification.concat(self.config[String(curPin)].notifications)
