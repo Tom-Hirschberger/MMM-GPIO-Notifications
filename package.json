@@ -1,6 +1,6 @@
 {
   "name": "MMM-GPIO-Notifications",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "",
   "main": "MMM-GPIO-Notifications.js",
   "devDependencies": {},
