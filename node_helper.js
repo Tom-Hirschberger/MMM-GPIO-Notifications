@@ -71,8 +71,6 @@ module.exports = NodeHelper.create({
             );
             self.lastMessuresHigh[String(curPin)] = curTimestamp;
           }
-
-          console.log(JSON.stringify(toSendNotifications))
           
           for (let i = 0; i < curLength; i++) {
             let curNotification = toSendNotifications[i];
@@ -86,7 +84,6 @@ module.exports = NodeHelper.create({
                 self.name +
                   ": Sending notification:"
               );
-              console.log(JSON.stringify(curNotification))
               self.sendSocketNotification(
                 curNotification.notification,
                 curNotification.payload
