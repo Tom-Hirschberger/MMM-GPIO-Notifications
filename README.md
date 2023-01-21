@@ -27,10 +27,9 @@ To use the module insert it in the config.js file. Here is an example:
         module: 'MMM-GPIO-Notifications',
         config: {
             '17': {
-              gpio_state: 1,
               gpio_debounce: 10,
               delay: 1000,
-              notifications: [
+              notifications_high: [
                 {
                   notification: 'USER_PRESENCE',
                   payload: true
@@ -42,47 +41,9 @@ To use the module insert it in the config.js file. Here is an example:
               ]
             },
             '4': {
-              gpio_state: 1,
               gpio_debounce: 20,
-              notifications: [
-                {
-                  'notification': 'SCREEN_TOGGLE',
-                  'payload': { 'forced': true },
-                  'profiles': 'pageOneEveryone pageTwoEveryone'
-                }
-              ]
-            }
-        }
-    },
-```
-
-As of version 0.0.8 of the module it is possible to send specific notifications for both states of the the pin. Instead of specifying `gpio_state` and `notifications` the two arrays `notifications_low` and `notifications_high` are used in this case:
-
-```json5
-    {
-        module: 'MMM-GPIO-Notifications',
-        config: {
-            '17': {
-              gpio_debounce: 10,
-              delay: 1000,
-              notifications_low: [
-                {
-                  notification: 'USER_PRESENCE',
-                  payload: true
-                }
-              ],
               notifications_high: [
                 {
-                  notification: 'USER_PRESENCE',
-                  payload: false
-                }
-              ]
-            },
-            '4': {
-              gpio_state: 1,
-              gpio_debounce: 20,
-              notifications: [
-                {
                   'notification': 'SCREEN_TOGGLE',
                   'payload': { 'forced': true },
                   'profiles': 'pageOneEveryone pageTwoEveryone'
@@ -92,6 +53,8 @@ As of version 0.0.8 of the module it is possible to send specific notifications 
         }
     },
 ```
+
+There are two buttons configured in this example. As of version 0.0.8 of the module it is possible to send specific notifications for both states of the the pin. Instead of specifying `gpio_state` and `notifications` the two arrays `notifications_low` and `notifications_high` are used. In the example above both gpio pins cause notifications being send if high state is triggered.
 
 | Option        | Description                                                                                                                                               | Type    | Default |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------- |

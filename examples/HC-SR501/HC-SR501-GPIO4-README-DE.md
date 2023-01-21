@@ -124,10 +124,9 @@ Unser Ziel ist es, dass jedes mal, wenn der PIR-Sensor die Trigger-Leitung (GPIO
         module: 'MMM-GPIO-Notifications',
         config: {
             '4': {
-                gpio_state: 1,
                 gpio_debounce: 0,
                 delay: 10000,
-                notifications: [
+                notifications_high: [
                     { 
                         notification: 'SCREEN_ON', 
                         payload: { 'forced': false }

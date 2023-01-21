@@ -13,46 +13,69 @@ module.exports = NodeHelper.create({
     this.started = false;
     this.currentProfile = "";
     this.currentProfilePattern = new RegExp(".*");
+    this.lastMessuresLow = {}
+    this.lastMessuresHigh = {}
   },
 
   sendAllNotifications: function (curPin, curValue) {
     const self = this;
     const curTimestamp = Date.now();
     if (curPin) {
+      let curDelay
+      let curMessures
+      if (curValue === 0){
+        curDelay = self.config[String(curPin)].delay_low
+        curMessures = self.lastMessuresLow[String(curPin)]
+      } else {
+        curDelay = self.config[String(curPin)].delay_high
+        curMessures = self.lastMessuresHigh[String(curPin)]
+      }
+
       if (
-        curTimestamp - self.lastMessures[String(curPin)] >
-        self.config[String(curPin)].delay
+        curTimestamp - curMessures >
+        curDelay
       ) {
 
         let toSendNotifications = []
         if ((typeof self.config[String(curPin)].gpio_state !== "undefined") &&
           (curValue === self.config[String(curPin)].gpio_state)
         ){
-          toSendNotifications = toSendNotifications.concat(self.config[String(curPin)].notifications)
+          if (typeof self.config[String(curPin)].notifications !== "undefined"){
+            toSendNotifications = toSendNotifications.concat(self.config[String(curPin)].notifications)
+          }
         }
         
         if ((typeof self.config[String(curPin)].notifications_low !== "undefined") &&
-        (curValue == 0)
+        (curValue === 0)
         ){
           toSendNotifications = toSendNotifications.concat(self.config[String(curPin)].notifications_low)
         }
         
         if ((typeof self.config[String(curPin)].notifications_high !== "undefined") &&
-        (curValue == 1)
+        (curValue === 1)
         ){
           toSendNotifications = toSendNotifications.concat(self.config[String(curPin)].notifications_high)
         }
 
         let curLength = toSendNotifications.length
-        console.log("Length of toSendNotifications: "+curLength)
 
         if (curLength > 0) {
-          console.log(
-            self.name + ": Sending notifications of pin " + curPin + "..."
-          );
-          self.lastMessures[String(curPin)] = curTimestamp;
-          for (var i = 0; i < curLength; i++) {
-            var curNotification = toSendNotifications[i];
+          if (curValue === 0){
+            console.log(
+              self.name + ": Sending notifications for low state of pin " + curPin + "..."
+            );
+            self.lastMessuresLow[String(curPin)] = curTimestamp;
+          } else {
+            console.log(
+              self.name + ": Sending notifications for high state of pin " + curPin + "..."
+            );
+            self.lastMessuresHigh[String(curPin)] = curTimestamp;
+          }
+
+          console.log(JSON.stringify(toSendNotifications))
+          
+          for (let i = 0; i < curLength; i++) {
+            let curNotification = toSendNotifications[i];
             // console.log("CurProfile: " + self.currentProfile);
             // console.log("CurProfileString: " + curNotification.profiles);
             if (
@@ -93,29 +116,48 @@ module.exports = NodeHelper.create({
     } else {
       console.log(self.name + ": Sending notifications of all pins...");
       for (curPin in self.config) {
+        let curDelay
+        let pinLow
+        let curMessures
+        if (self.gpio[String(curPin)].readSync() == 0){
+          curDelay = self.config[String(curPin)].delay_low
+          pinLow = true
+          curMessures = self.lastMessuresLow[String(curPin)]
+        } else {
+          curDelay = self.config[String(curPin)].delay_high
+          pinLow = false
+          curMessures = self.lastMessuresHigh[String(curPin)]
+        }
+
         if (
-          curTimestamp - self.lastMessures[String(curPin)] >
-          self.config[String(curPin)].delay
+          curTimestamp - curMessures >
+          curDelay
         ) {
           console.log(
             self.name + ": Sending notifications of pin " + curPin + "..."
           );
-          self.lastMessures[String(curPin)] = curTimestamp;
+
+          if(pinLow){
+            self.lastMessuresLow[String(curPin)] = curTimestamp;
+          } else {
+            self.lastMessuresHigh[String(curPin)] = curTimestamp;
+          }
+          
           let curNotifications = []
           if (typeof self.config[String(curPin)].notifications !== "undefined"){
-            curNotification = curNotification.concat(self.config[String(curPin)].notifications)
+            curNotifications = curNotifications.concat(self.config[String(curPin)].notifications)
           }
 
           if (typeof self.config[String(curPin)].notifications_low !== "undefined"){
-            curNotification = curNotification.concat(self.config[String(curPin)].notifications_low)
+            curNotifications = curNotifications.concat(self.config[String(curPin)].notifications_low)
           }
 
           if (typeof self.config[String(curPin)].notifications_high !== "undefined"){
-            curNotification = curNotification.concat(self.config[String(curPin)].notifications_high)
+            curNotifications = curNotifications.concat(self.config[String(curPin)].notifications_high)
           }
           curLength = curNotifications.length;
           for (i = 0; i < curLength; i++) {
-            curNotification = curNotifications[i];
+            let curNotification = curNotifications[i];
             if (
               typeof curNotification.profiles === "undefined" ||
               self.currentProfilePattern.test(curNotification.profiles)
@@ -149,7 +191,14 @@ module.exports = NodeHelper.create({
     const self = this;
     if (notification === "CONFIG" && self.started === false) {
       self.config = payload;
-      self.lastMessures = [];
+
+      for (var curPin in self.config) {
+        if (( typeof self.config[String(curPin)].gpio_state !== "undefined" ) ||
+            ( typeof self.config[String(curPin)].notifications !== "undefined" )
+        ){
+          console.log(self.name + ": DEPRECATION WARNING: Your config of pin "+curPin+" uses the old, deprecated syntax for configuration. Please change to the new \"notification_low\" and \"notification_high\" arrays as the old syntax handling may be removed in future versions!")
+        }
+      }
 
       if (Gpio.accessible) {
         self.gpio = [];
@@ -158,16 +207,25 @@ module.exports = NodeHelper.create({
           self.gpio[String(curPin)] = new Gpio(curPin, "in", "both", {
             debounceTimeout: self.config[String(curPin)].gpio_debounce
           });
-          self.lastMessures[String(curPin)] = -1;
+          self.lastMessuresLow[String(curPin)] = -1;
+          self.lastMessuresHigh[String(curPin)] = -1;
           if (typeof self.config[String(curPin)].delay === "undefined") {
-            console.log(
-              self.name +
-                ": Setting delay of pin " +
-                curPin +
-                " to default value 0!"
-            );
             self.config[String(curPin)].delay = 0;
           }
+          if (typeof self.config[String(curPin)].delay_high === "undefined") {
+            self.config[String(curPin)].delay_high = self.config[String(curPin)].delay;
+          }
+          if (typeof self.config[String(curPin)].delay_low === "undefined") {
+            self.config[String(curPin)].delay_low = self.config[String(curPin)].delay;
+          }
+
+          console.log(
+            self.name + ": Watched pin: " + curPin + " has low state delay of "+self.config[String(curPin)].delay_low+"!"
+          );
+
+          console.log(
+            self.name + ": Watched pin: " + curPin + " has high state delay of "+self.config[String(curPin)].delay_high+"!"
+          );
 
           (function (gpiox, theCurPin) {
             gpiox.watch(function (err, value) {
