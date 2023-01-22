@@ -201,9 +201,16 @@ module.exports = NodeHelper.create({
         self.gpio = [];
         for (var curPin in self.config) {
           console.log(self.name + ": Registering pin: " + curPin);
+	  let curDebounce = 0
+	  if (typeof self.config[String(curPin)].gpio_debounce !== "undefined"){
+	    curDebounce = self.config[String(curPin)].gpio_debounce
+	  }
           self.gpio[String(curPin)] = new Gpio(curPin, "in", "both", {
-            debounceTimeout: self.config[String(curPin)].gpio_debounce || 0
+            debounceTimeout: curDebounce
           });
+	  console.log(
+            self.name + ": Watched pin: " + curPin + " has debounce of "+curDebounce+"!"
+          );
           self.lastMessuresLow[String(curPin)] = -1;
           self.lastMessuresHigh[String(curPin)] = -1;
           if (typeof self.config[String(curPin)].delay === "undefined") {
