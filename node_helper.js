@@ -202,7 +202,7 @@ module.exports = NodeHelper.create({
         for (var curPin in self.config) {
           console.log(self.name + ": Registering pin: " + curPin);
           self.gpio[String(curPin)] = new Gpio(curPin, "in", "both", {
-            debounceTimeout: self.config[String(curPin)].gpio_debounce
+            debounceTimeout: self.config[String(curPin)].gpio_debounce || 0
           });
           self.lastMessuresLow[String(curPin)] = -1;
           self.lastMessuresHigh[String(curPin)] = -1;
