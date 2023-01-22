@@ -118,10 +118,9 @@ My PIR sensor triggers every 5 seconds. I do not want to send a notification tha
         module: 'MMM-GPIO-Notifications',
         config: {
             '4': {
-                gpio_state: 1,
                 gpio_debounce: 0,
                 delay: 10000,
-                notifications: [
+                notifications_high: [
                     { 
                         notification: 'SCREEN_ON', 
                         payload: { 'forced': false }
