@@ -12,10 +12,9 @@ import RPi.GPIO as GPIO
 import time
 import sys
 
+count = 0
 debounce = 5
 gpios = [5,6]
-partner = {5:6, 6:5}
-ratary_direction = 0
 gpio_last_value = {5: 1, 6:1}
 last_final_change = 0
 
@@ -25,37 +24,41 @@ if len(sys.argv) > 1:
     gpios = []
     for cur_gpio in sys.argv[2:]:
       gpios.append(int(cur_gpio))
-    
-    partner = {gpios[0]:gpios[1], gpios[1]: gpios[0]}
     gpio_last_value = {gpios[0]:1, gpios[1]:1}
 
+debounce = debounce * 1000 #convert debounce to nano seconds
+
 def callback(channel):
-  global last_final_change
-  milliseconds = int(time.time() * 1000)
+  global last_final_change, count, debounce, gpios, gpio_last_value, last_final_change
+  timestamp = time.time_ns()
   #print("GPIO %d changed (%s)" % (channel, GPIO.input(channel)))
   gpio_cur_value = (GPIO.input(gpios[0]), GPIO.input(gpios[1]))
   if gpio_cur_value[0] == gpio_cur_value[1]:
     if gpio_cur_value[0] == 1:
-      if milliseconds - last_final_change > debounce:
-        last_final_change = milliseconds
+      if timestamp - last_final_change > debounce:
+        last_final_change = timestamp
         #print("Got a High/High")
         if gpio_last_value[gpios[0]] == 0:
           if gpio_last_value[gpios[1]] == 1:
-            print("CW",flush=True)
+            print("CW(%d)"%count,flush=True)
+            count += 1
         else:
           if gpio_last_value[gpios[0]] == 0:
-            print("CCW",flush=True)
+            print("CCW(%d)"%count,flush=True)
+            count += 1
       
     else:
-      if milliseconds - last_final_change > debounce:
-        last_final_change = milliseconds
+      if timestamp - last_final_change > debounce:
+        last_final_change = timestamp
         #print("Got a Low/Low")
         if gpio_last_value[gpios[0]] == 1:
           if gpio_last_value[gpios[1]] == 0:
-            print ("CW",flush=True)
+            print ("CW(%d)"%count,flush=True)
+            count += 1
         else:
           if gpio_last_value[gpios[1]] == 1:
-            print("CCW",flush=True)
+            print("CCW(%d)"%count,flush=True)
+            count += 1
   else:
     #print("GPIO %d changed but %d is different!" %(channel, partner[channel]))
     gpio_last_value[channel] = GPIO.input(channel)
