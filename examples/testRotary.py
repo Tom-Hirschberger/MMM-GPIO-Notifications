@@ -15,7 +15,7 @@ import sys
 count = 0
 debounce = 5
 gpios = [5,6]
-gpio_last_value = {5: 1, 6:1}
+last_values = {5: 1, 6:1}
 last_final_change = 0
 
 if len(sys.argv) > 1:
@@ -24,44 +24,44 @@ if len(sys.argv) > 1:
     gpios = []
     for cur_gpio in sys.argv[2:]:
       gpios.append(int(cur_gpio))
-    gpio_last_value = {gpios[0]:1, gpios[1]:1}
+    last_values = {gpios[0]:1, gpios[1]:1}
 
 debounce = debounce * 1000 #convert debounce to nano seconds
 
 def callback(channel):
-  global last_final_change, count, debounce, gpios, gpio_last_value, last_final_change
+  global last_final_change, count, debounce, gpios, last_values, last_final_change
   timestamp = time.time_ns()
   #print("GPIO %d changed (%s)" % (channel, GPIO.input(channel)))
   gpio_cur_value = (GPIO.input(gpios[0]), GPIO.input(gpios[1]))
+  #print(gpio_cur_value)
   if gpio_cur_value[0] == gpio_cur_value[1]:
-    if gpio_cur_value[0] == 1:
-      if timestamp - last_final_change > debounce:
-        last_final_change = timestamp
-        #print("Got a High/High")
-        if gpio_last_value[gpios[0]] == 0:
-          if gpio_last_value[gpios[1]] == 1:
-            print("CW(%d)"%count,flush=True)
-            count += 1
-        else:
-          if gpio_last_value[gpios[0]] == 0:
-            print("CCW(%d)"%count,flush=True)
-            count += 1
-      
-    else:
-      if timestamp - last_final_change > debounce:
-        last_final_change = timestamp
-        #print("Got a Low/Low")
-        if gpio_last_value[gpios[0]] == 1:
-          if gpio_last_value[gpios[1]] == 0:
-            print ("CW(%d)"%count,flush=True)
-            count += 1
-        else:
-          if gpio_last_value[gpios[1]] == 1:
-            print("CCW(%d)"%count,flush=True)
-            count += 1
+    if timestamp - last_final_change > debounce:
+      last_final_change = timestamp
+      if gpio_cur_value[0] == 1:
+          #print("Got a High/High")
+          if last_values[gpios[0]] == 0:
+            if last_values[gpios[1]] == 1:
+              print("CW(%d)"%count,flush=True)
+              count += 1
+          else:
+            if last_values[gpios[0]] == 0:
+              print("CCW(%d)"%count,flush=True)
+              count += 1
+      else:
+          #print("Got a Low/Low")
+          if last_values[gpios[0]] == 1:
+            if last_values[gpios[1]] == 0:
+              print ("CW(%d)"%count,flush=True)
+              count += 1
+          else:
+            if last_values[gpios[1]] == 1:
+              print("CCW(%d)"%count,flush=True)
+              count += 1
+    #else:
+      #print("Similar but debounce (%d)"%(timestamp - last_final_change))
   else:
     #print("GPIO %d changed but %d is different!" %(channel, partner[channel]))
-    gpio_last_value[channel] = GPIO.input(channel)
+    last_values[channel] = GPIO.input(channel)
 
 GPIO.setmode(GPIO.BCM)
 
@@ -72,7 +72,7 @@ for gpio_nr in gpios:
 
 try:
   while True:
-    time.sleep(5)
+    time.sleep(1)
 except KeyboardInterrupt:
   GPIO.cleanup()
   print ("Bye")
