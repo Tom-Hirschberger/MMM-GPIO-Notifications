@@ -9,13 +9,78 @@ As a new feature you can now set profiles for each notifcation. Because of this 
 
 ## Installation
 
-The postinstallation will take some time. Please wait for it to finish!
+Hint: The postinstallation will take some time. Please wait for it to finish!
+Hint: If you use the module in a container (i.e. docker) setup please skip this steps and make sure to look to the next section.
 
 ```bash
     cd ~/MagicMirror/modules
     git clone https://github.com/Tom-Hirschberger/MMM-GPIO-Notifications.git
     cd MMM-GPIO-Notifications
     npm install
+```
+
+## Setup in a container
+
+If you want to use the module within a container it will need some preperation.
+First make sure `python` is available in the container. It is needed only during the installation (`npm install`) of the module but not during runtime.
+
+If you use the container image of `karsten13` you need to switch from the `latest` tag to the `fat`.
+
+If you use `docker-compose` you will find a line:
+
+```yaml
+image: karsten13/magicmirror:latest
+```
+
+in the `docker-compose.yml" file. Please change it to:
+
+```yaml
+image: karsten13/magicmirror:fat
+```
+
+Next you will need to make sure that you map `/sys` inside to container.
+
+If you started the container without `docker-compose` simply add the following option to the command `docker run` command:
+
+```bash
+-v /sys:/sys
+```
+
+It then will look something like:
+
+```bash
+docker run -it --rm --name mymirror \
+ -v ${HOME}/mm/modules:/opt/magic_mirror/modules \
+ -v ${HOME}/mm/config:/opt/magic_mirror/config \
+ -v ${HOME}/mm/css:/opt/magic_mirror/css \
+ -v /sys:/sys \
+ -p 8080:8080 \
+ karsten13/magicmirror:fat npm run server
+```
+
+In case you use `docker-compose` to start your mirror you need to add a addtional volume to the `docker-compose.yml`.
+It then will look something like:
+
+```yaml
+version: '3'
+
+services:
+  magicmirror:
+    container_name: mm
+    image: karsten13/magicmirror:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../mounts/config:/opt/magic_mirror/config
+      - ../mounts/modules:/opt/magic_mirror/modules
+      - ../mounts/css:/opt/magic_mirror/css
+      - /sys:/sys
+    restart: unless-stopped
+    command:
+      - npm
+      - run
+      - server
+
 ```
 
 ## Configuration
@@ -54,10 +119,10 @@ To use the module insert it in the config.js file. Here is an example:
     },
 ```
 
-There are two buttons configured in this example.  
+There are two buttons configured in this example.
 As of version 0.0.8 of the module it is possible to send specific notifications for both states of the the pin. Instead of specifying `gpio_state` and `notifications` the two arrays `notifications_low` and `notifications_high` are used. In the example above both gpio pins cause notifications being send if high state is triggered.
 
-As of version 0.0.9 of the module the old syntax using `gpio_state` and `notifications` is depcreated. Use `notifications_low` and `notifications_high` instead!  
+As of version 0.0.9 of the module the old syntax using `gpio_state` and `notifications` is depcreated. Use `notifications_low` and `notifications_high` instead!
 
 As of version 0.0.9 of the module it is possible to configure different delays depending on the state with the options `delay_high` and `delay_low`. If only `delay` is configured it will be used for both the high and the low state.
 
@@ -77,10 +142,10 @@ As of version 0.0.9 of the module it is possible to configure different delays d
 
 This section tries to describe the difference between the `gpio_debounce` and the different delay options `delay`, `delay_low` and `delay_high`.
 
-So first of all why do we need debounce in some cases...  
-Let us assume you have connected a button connected to a GPIO pin and want to do some action every time the button gets pressed and the GPIO changes to high state. Usually buttons do not provide debounce machanism by there self. Cause of the mechanics in the button our cause the fingers are shaking a little bit it can happen that the state changes from low to high, from high to low and back again to high within milliseconds of time. If no debounce mechanism is implemented the module will fire the actions for every of this changes. But WE know that if the user pressed the button he/she usally does not do that again with in the next seconds. So we can provide a debounce time within we ignore further input after the last one.  
+So first of all why do we need debounce in some cases...
+Let us assume you have connected a button connected to a GPIO pin and want to do some action every time the button gets pressed and the GPIO changes to high state. Usually buttons do not provide debounce machanism by there self. Cause of the mechanics in the button our cause the fingers are shaking a little bit it can happen that the state changes from low to high, from high to low and back again to high within milliseconds of time. If no debounce mechanism is implemented the module will fire the actions for every of this changes. But WE know that if the user pressed the button he/she usally does not do that again with in the next seconds. So we can provide a debounce time within we ignore further input after the last one.
 As this is a common problem the low-level GPIO libraries already provide such a machanism. You can simple set a debounce time and all input during this pirod will be ignored. As this already happens in the operating system it does save a lot of processing power.
-But as the module does not get informored during the debounce time that an state change happend i can not provide any debug output about it as i simple do not recognize it.  
+But as the module does not get informored during the debounce time that an state change happend i can not provide any debug output about it as i simple do not recognize it.
 The other thing is that this mechanism is usally to set debounce intervals in the amount of a maximum of a few seconds. Thats way i introduced the `delay` option some time ago.
 
 **The main difference between the `gpio_debounce` and the `delay`, `delay_low` and `delay_high` is that the delay options are handled by the module itself and cost more cpu power!**
@@ -129,6 +194,6 @@ We have the following goals in this example:
 * As we use the `USER_PRESENCE` notification with payload `false` only for some external systems like HomeAssistent or NodeRed which do need to know after the user finally leaves we configure a `delay_low` of `30000` and suppress all notifications within the 30 seconds.
 * Additionally there is a button connected to GPIO 17. Everytime the button is pressed we want a module that controls a led strip to toggle the state of the strip. We baught a cheap button which does not have any debounce machnism in it. Cause it fires random state changes after we pressed it for about a second we set a `gpio_debounce` of `1000` milliseconds wich is 1 second.
 
-To sum things up:  
-If you want to set a small delay where state changes should be ignored after a state change and you do not care of different delays depending on the state use the `gpio_debounce`. This saves some performance for other things with the cost that you will not see the ignored events in the log file.  
-If you want to be more flexible, you want to set a different delays for the high or low state and you want to see ignored events in the log file use the `delay`, `delay_low` and `delay_high` option. It will cost some performance but it is not that much. 
+To sum things up:
+If you want to set a small delay where state changes should be ignored after a state change and you do not care of different delays depending on the state use the `gpio_debounce`. This saves some performance for other things with the cost that you will not see the ignored events in the log file.
+If you want to be more flexible, you want to set a different delays for the high or low state and you want to see ignored events in the log file use the `delay`, `delay_low` and `delay_high` option. It will cost some performance but it is not that much.
