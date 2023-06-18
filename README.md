@@ -2,17 +2,17 @@
 
 MMM-GPIO-Notifications is a module for the [MagicMirror](https://github.com/MichMich/MagicMirror) project by [Michael Teeuw](https://github.com/MichMich).
 
-It watches the state of configurable GPIO-Pins and sends configurable notifications (with optional payload) if the state of the pins change to the configured value. If you configure a delay no notifcations will be send for the pin after a sucessful trigger for this time.
+It watches the state of configurable GPIO-Pins and sends configurable notifications (with optional payload) if the state of the pins change to the configured value. If you configure a delay no notifcations will be send for the pin after a successful trigger for this time.
 As a new feature you can now set profiles for each notifcation. Because of this you can use the same sensor for different actions in different profiles (i.e. different pages).
 
-As of version 0.1.0 of the module it is possible to use rotary encoders, too. Instead of one pin, two pins get configured (one data and one clock pin) which work togehter.
+As of version 0.1.0 of the module it is possible to use rotary encoders, too. Instead of one pin, two pins get configured (one data and one clock pin) which work together.
 
 **I wrote an [english](https://www.github.com/Tom-Hirschberger/MMM-GPIO-Notifications/tree/master/examples%2FHC-SR501%2FHC-SR501-GPIO4-README-EN.md) and an [german](https://www.github.com/Tom-Hirschberger/MMM-GPIO-Notifications/tree/master/examples%2FHC-SR501%2FHC-SR501-GPIO4-README-DE.md) tutorial on howto connect an HC-SR501 PIR sensor and use this module in combination with [MMM-Screen-Powersave-Notifications](https://github.com/Tom-Hirschberger/MMM-Screen-Powersave-Notification) to implement an auto-on/auto-off for the screen**
 
 ## Installation
 
 Hint: The postinstallation will take some time. Please wait for it to finish!
-Hint: If you use the module in a container (i.e. docker) setup please skip this steps and make sure to look to the next section.
+Hint: If you use the module in a container (i.e. docker) setup please skip this steps and make sure to look to the next section and then run these steps if the preconditions are met.
 
 ```bash
     cd ~/MagicMirror/modules
@@ -24,7 +24,7 @@ Hint: If you use the module in a container (i.e. docker) setup please skip this 
 ## Setup in a container
 
 If you want to use the module within a container it will need some preperation.
-First make sure `python` is available in the container. It is needed only during the installation (`npm install`) of the module but not during runtime.
+First make sure `python3` is available in the container. It is needed only during the installation (`npm install`) of the module but not during runtime.
 
 If you use the container image of `karsten13` you need to switch from the `latest` tag to the `fat`.
 
@@ -40,7 +40,7 @@ in the `docker-compose.yml" file. Please change it to:
 image: karsten13/magicmirror:fat
 ```
 
-Next you will need to make sure that you map `/sys` inside to container.
+Next you will need to make sure that you map `/sys` inside the container.
 
 If you started the container without `docker-compose` simply add the following option to the command `docker run` command:
 
@@ -87,7 +87,7 @@ services:
 
 ## Configuration
 
-As of version 0.1.0 of the module rotary encoders can be used. The configuration is slightly differnt so i will provide two examples in two sections of this readme.
+As of version 0.1.0 of the module rotary encoders can be used. The configuration is slightly different between single pins and the one for rotary encoders. Cause of this i will provide two examples in two sections of this readme.
 
 ### Single GPIO pin
 
@@ -115,9 +115,9 @@ To use the module insert it in the config.js file. Here is an example:
               gpio_debounce: 20,
               notifications_high: [
                 {
-                  'notification': 'SCREEN_TOGGLE',
-                  'payload': { 'forced': true },
-                  'profiles': 'pageOneEveryone pageTwoEveryone'
+                  notification: 'SCREEN_TOGGLE',
+                  payload: { 'forced': true },
+                  profiles: 'pageOneEveryone pageTwoEveryone'
                 }
               ]
             }
@@ -144,7 +144,7 @@ As of version 0.0.9 of the module it is possible to configure different delays d
 | notifications_low | Instead of the use of `gpio_state` this array of notifications can be used to send specific notifications if the low state of the pin is triggered. | Array |
 | notifications_high | Instead of the use of `gpio_state` this array of notifications can be used to send specific notifications if the high state of the pin is triggered. | Array |
 
-### Ratary encoder
+### Rotary encoder
 
 ```json5
     {
@@ -166,19 +166,19 @@ As of version 0.0.9 of the module it is possible to configure different delays d
             rotary_delay: 5,
             notifications_cw: [
               {
-                'notification': 'PROFILE_INCREMENT_HORIZONTAL',
-                'payload': true,
+                notification: 'PROFILE_INCREMENT_HORIZONTAL',
+                payload: true,
               },
               {
-                'notification': 'TEST',
-                'payload': false,
-                'profiles': "pageC"
+                notification: 'TEST',
+                payload: false,
+                profiles: "pageC"
               }
             ],
             notifications_ccw: [
               {
-                'notification': 'PROFILE_DECREMENT_HORIZONTAL',
-                'payload': true,
+                notification: 'PROFILE_DECREMENT_HORIZONTAL',
+                payload: true,
               }
             ],
           },
@@ -235,14 +235,14 @@ Let's look at a example with the following configuration:
               delay_low: 30000,
               notifications_high: [
                 {
-                  'notification': 'USER_PRESENCE',
-                  'payload': true,
+                  notification: 'USER_PRESENCE',
+                  payload: true,
                 }
               ],
               notifications_low: [
                 {
-                  'notification': 'USER_PRESENCE',
-                  'payload': false,
+                  notification: 'USER_PRESENCE',
+                  payload: false,
                 }
               ]
             },
