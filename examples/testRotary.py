@@ -44,7 +44,7 @@ def callback(channel):
               print("CW(%d)"%count,flush=True)
               count += 1
           else:
-            if last_values[gpios[0]] == 0:
+            if last_values[gpios[1]] == 0:
               print("CCW(%d)"%count,flush=True)
               count += 1
       else:
