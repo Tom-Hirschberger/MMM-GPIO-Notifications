@@ -5,6 +5,8 @@ MMM-GPIO-Notifications is a module for the [MagicMirror](https://github.com/Mich
 It watches the state of configurable GPIO-Pins and sends configurable notifications (with optional payload) if the state of the pins change to the configured value. If you configure a delay no notifcations will be send for the pin after a sucessful trigger for this time.
 As a new feature you can now set profiles for each notifcation. Because of this you can use the same sensor for different actions in different profiles (i.e. different pages).
 
+As of version 0.1.0 of the module it is possible to use rotary encoders, too. Instead of one pin, two pins get configured (one data and one clock pin) which work togehter.
+
 **I wrote an [english](https://www.github.com/Tom-Hirschberger/MMM-GPIO-Notifications/tree/master/examples%2FHC-SR501%2FHC-SR501-GPIO4-README-EN.md) and an [german](https://www.github.com/Tom-Hirschberger/MMM-GPIO-Notifications/tree/master/examples%2FHC-SR501%2FHC-SR501-GPIO4-README-DE.md) tutorial on howto connect an HC-SR501 PIR sensor and use this module in combination with [MMM-Screen-Powersave-Notifications](https://github.com/Tom-Hirschberger/MMM-Screen-Powersave-Notification) to implement an auto-on/auto-off for the screen**
 
 ## Installation
@@ -85,6 +87,10 @@ services:
 
 ## Configuration
 
+As of version 0.1.0 of the module rotary encoders can be used. The configuration is slightly differnt so i will provide two examples in two sections of this readme.
+
+### Single GPIO pin
+
 To use the module insert it in the config.js file. Here is an example:
 
 ```json5
@@ -137,6 +143,72 @@ As of version 0.0.9 of the module it is possible to configure different delays d
 | notifications | DEPRECATED! An array of natifications. Each notification needs a key "notification", the payload is optional. Also a optional profile string can be set. Use `notification_low` and `notifications_high` instead. | Array |
 | notifications_low | Instead of the use of `gpio_state` this array of notifications can be used to send specific notifications if the low state of the pin is triggered. | Array |
 | notifications_high | Instead of the use of `gpio_state` this array of notifications can be used to send specific notifications if the high state of the pin is triggered. | Array |
+
+### Ratary encoder
+
+```json5
+    {
+        module: 'MMM-GPIO-Notifications',
+        config: {
+          '13': {
+              gpio_debounce: 500,
+              notifications_high: [
+                {
+                  notification: 'SCREEN_TOGGLE',
+                  payload: { 'forced': true }
+                }
+              ]
+          },
+          '6,5': {
+            gpio_debounce: 0,
+            delay_cw: 1000,
+            delay_ccw: 2000,
+            rotary_delay: 5,
+            notifications_cw: [
+              {
+                'notification': 'PROFILE_INCREMENT_HORIZONTAL',
+                'payload': true,
+              },
+              {
+                'notification': 'TEST',
+                'payload': false,
+                'profiles': "pageC"
+              }
+            ],
+            notifications_ccw: [
+              {
+                'notification': 'PROFILE_DECREMENT_HORIZONTAL',
+                'payload': true,
+              }
+            ],
+          },
+        }
+    },
+```
+
+In this example a rotary encoder with the following options is configured:
+
+* the switch pin of my rotary encoder is GPIO 13
+* a small debounce value `gpio_debounce` of `500` milliseconds is set for my rotary switch GPIO
+* if the rotary encoder gets pressed my screen gets toggled by notification "SCREEN_TOGGLE"
+* the data pin of the rotary encoder is GPIO 6
+* the clock pin of the rotary encoder is GPIO 5
+* we do not need a gpio debounce so it is set to 0
+* notifications for clockwise direction will be send only after a delay of one second (1000ms)
+* notifications for counterclockwise direction will be send only after a delay of two second (2000ms)
+* my rotary encoder sometimes sends results twice within a short time when it is turned. So i set a small amount of 5 milliseconds as delay between two events
+* if the rotary is turned clockwise two notifications are send: "PROFILE_INCREMENT_HORIZONTAL" and "TEST". But "TEST" is only send on my center profile "pageC"
+* if the rotary is turned counterclockwise the notification "PROFILE_DECREMENT_HORIZONTAL" is send
+
+| Option        | Description                                                                                                                                               | Type    | Default |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------- |
+| THE_KEY       | the number of the pin you want to watch. MAKE SURE TO ADD IT IN ''                                                                                        | String  |         |
+| gpio_debounce | the debounce value to use for the gpio event handling; if the pin changes the state during this period after the last event the new event will be ignored. Look in the section `Debounce vs. Delay` for more information. | Integer |    0 as of version 0.0.9     |
+| delay         | time in milliseconds till the notifications will be send again altough the rotary has been turned (either clockwise or counterclockwise).  Look in the section `Debounce vs. Delay` for more information. | Integer | 0 |
+| delay_cw         | time in milliseconds till the notifications of the rotary will be send again after it got turned clockwise. Look in the section `Debounce vs. Delay` for more information.| Integer | the value of `delay` |
+| delay_ccw         | time in milliseconds till the notifications of the rotary will be send again after it got turned counterclockwise. Look in the section `Debounce vs. Delay` for more information.| Integer | the value of `delay` |
+| notifications_cw | A array of notifications that should be send if the rotary has been turned clockwise. | Array |
+| notifications_ccw | A array of notifications that should be send if the rotary has been turned counterclockwise. | Array |
 
 ### Debounce vs. Delay
 
