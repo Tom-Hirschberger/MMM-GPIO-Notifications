@@ -173,7 +173,7 @@ Je nachdem wie viele Module aktiv sind können sehr viele Notifcations auftreten
 ## Zusammenfassung
 
 Auf dem Monitor sollten wenn der PIR-Sensor ausgelöst wird eine Meldung erscheinen, dass das GPIO-Modul eine SCREEN_ON Notification gesendet hat.
-In der Log-Datei von Magic Mirror ("~/.pm2/logs/MagicMirror-out.log") sollten Einträge der nachfolgenden Form enthalten sein:
+In der Log-Datei von MagicMirror² ("~/.pm2/logs/MagicMirror-out.log") sollten Einträge der nachfolgenden Form enthalten sein:
 
 ```bash
 [12:48:48.256] [LOG]    MMM-GPIO-Notifications: Watched pin: 4 triggered!
