@@ -1,0 +1,46 @@
+#!/bin/bash
+
+echo -n "Check for package libgpiod-dev and install if needed..."
+if [ `apt list --installed libgpiod-dev 2>/dev/null | grep -c libgpiod-dev` -lt 1 ]
+then
+	echo "missing"
+	echo "Installing missing package libgpiod-dev..."
+	sudo apt -y update && sudo apt -y install libgpiod-dev
+	if [ $? -gt 0 ]
+	then
+		echo "failed"
+		exit 1
+	else
+		echo "done"
+	fi
+else
+	echo "Skipping. Already installed."
+fi
+
+echo -n "Check for package gpiod and install if needed..."
+if [ `apt list --installed gpiod 2>/dev/null | grep -c gpiod` -lt 1 ]
+then
+        echo "missing"
+        echo "Installing missing package gpiod..."
+        sudo apt -y update && sudo apt -y install gpiod
+        if [ $? -gt 0 ]
+        then
+                echo "failed"
+                exit 1
+        else
+                echo "done"
+        fi
+else
+        echo "Skipping. Already installed."
+fi
+
+echo "Calling converter script to gather info about the gpio chips, lines and names..."
+./convertGpioInfo2Json.py
+
+if [ $? -gt 0 ]
+then
+	echo "Failed to convert info of gpioinfo command. Aborting"
+	exit 1
+else
+	echo "Got the info we need and got it converted."
+fi

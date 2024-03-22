@@ -6,19 +6,25 @@
  */
 
 const NodeHelper = require("node_helper");
-const Gpio = require("onoff").Gpio;
+const OpenGPIO = require("opengpio")
+const openGPIOChip = OpenGPIO.Default
+const openGPIOEdge = OpenGPIO.Edge
+const fs = require('fs')
+const path = require('path')
+const gpioInfoFile = path.join(__dirname, '/gpioinfo.json')
 
 module.exports = NodeHelper.create({
   start: function () {
-    this.started = false;
-    this.currentProfile = "";
-    this.currentProfilePattern = new RegExp(".*");
-    this.lastMessuresLow = {}
-    this.lastMessuresHigh = {}
-	this.lastMessuresCW = {}
-    this.lastMessuresCCW = {}
-	this.lastActionsRotary = {}
-	this.lastValuesRotaryPins = {}
+	const self = this
+    self.started = false;
+    self.currentProfile = "";
+    self.currentProfilePattern = new RegExp(".*");
+    self.lastMessuresLow = {}
+    self.lastMessuresHigh = {}
+	self.lastMessuresCW = {}
+    self.lastMessuresCCW = {}
+	self.lastActionsRotary = {}
+	self.gpioinfo = JSON.parse(fs.readFileSync(gpioInfoFile))
   },
 
   sendAllNotificationsOfSinglePins: function () {
@@ -289,152 +295,90 @@ module.exports = NodeHelper.create({
   registerSinglePin: function(curPin) {
 	const self = this
 	console.log(self.name + ": Registering pin: " + curPin)
-	let curDebounce = 0
-	if (typeof self.config[String(curPin)].gpio_debounce !== "undefined"){
-		curDebounce = self.config[String(curPin)].gpio_debounce
-	}
-	self.gpio[String(curPin)] = new Gpio(curPin, "in", "both", {
-		debounceTimeout: curDebounce
-	});
-	console.log(
-		self.name + ": Watched pin: " + curPin + " has debounce of "+curDebounce+"!"
-	);
-	self.lastMessuresLow[String(curPin)] = -1;
-	self.lastMessuresHigh[String(curPin)] = -1;
-	if (typeof self.config[String(curPin)].delay === "undefined") {
-		self.config[String(curPin)].delay = 0;
-	}
-	if (typeof self.config[String(curPin)].delay_high === "undefined") {
-		self.config[String(curPin)].delay_high = self.config[String(curPin)].delay;
-	}
-	if (typeof self.config[String(curPin)].delay_low === "undefined") {
-		self.config[String(curPin)].delay_low = self.config[String(curPin)].delay;
-	}
 
-	console.log(
-		self.name + ": Watched pin: " + curPin + " has low state delay of "+self.config[String(curPin)].delay_low+"!"
-	);
+	let curGPIOInfo = self.gpioinfo["gpios"]["GPIO"+curPin]
 
-	console.log(
-		self.name + ": Watched pin: " + curPin + " has high state delay of "+self.config[String(curPin)].delay_high+"!"
-	);
+	if (typeof curGPIOInfo !== "undefined"){
+		let curGPIOObj = {chip: curGPIOInfo[0], line:curGPIOInfo[1]}
+		self.lastMessuresLow[String(curPin)] = -1;
+		self.lastMessuresHigh[String(curPin)] = -1;
+		if (typeof self.config[String(curPin)].delay === "undefined") {
+			self.config[String(curPin)].delay = 0;
+		}
+		if (typeof self.config[String(curPin)].delay_high === "undefined") {
+			self.config[String(curPin)].delay_high = self.config[String(curPin)].delay;
+		}
+		if (typeof self.config[String(curPin)].delay_low === "undefined") {
+			self.config[String(curPin)].delay_low = self.config[String(curPin)].delay;
+		}
 
-	(function (gpiox, theCurPin) {
-		gpiox.watch(function (err, value) {
-			if (err) {
-				console.log(err);
-			}
-			console.log(
-				self.name + ": Watched pin: " + curPin + " triggered with value "+value+"!"
-			);
-			self.sendNotificationsOfSinglePin(theCurPin, value);
-		});
-	})(self.gpio[String(curPin)], curPin);
-  },
+		console.log(
+			self.name + ": Watched pin: " + curPin + " has low state delay of "+self.config[String(curPin)].delay_low+"!"
+		);
 
-  evaluateRotaryResults: function(identifier, dataPin, clockPin, dataValue, clockValue, actionPinIsData) {
-	const self = this
-	let curTimestamp = Date.now()
-	let curRotaryDelay = self.config[identifier].rotaryDelay || 5
-	//console.log("Evaluating current values of rotary: "+identifier)
-	if (dataValue == clockValue){
-		if (curTimestamp - self.lastActionsRotary[identifier] > curRotaryDelay){
-			self.lastActionsRotary[identifier] = curTimestamp
+		console.log(
+			self.name + ": Watched pin: " + curPin + " has high state delay of "+self.config[String(curPin)].delay_high+"!"
+		);
 
-			if (dataValue == 1){
-				//console.log("Got a High/High")
-				if (self.lastValuesRotaryPins[dataPin] == 0){
-					if (self.lastValuesRotaryPins[clockPin] == 1){
-						//console.log("CW("+identifier+")")
-						self.sendNotificationsOfRotary(identifier, true)
-					}
-				} else {
-					if (self.lastValuesRotaryPins[clockPin] == 0) {
-						//console.log("CCW("+identifier+")")
-						self.sendNotificationsOfRotary(identifier, false)
-					}
-				}
+		let watch = openGPIOChip.watch(curGPIOObj, openGPIOEdge.Both)
+
+		watch.on('event', (value) => {
+			if (value){
+				value = 1
 			} else {
-				//console.log("Got a Low/Low")
-				if (self.lastValuesRotaryPins[dataPin] == 1){
-					if(self.lastValuesRotaryPins[clockPin] == 0){
-						//console.log("CW("+identifier+")")
-						self.sendNotificationsOfRotary(identifier, true)
-					}
-				} else {
-					if(self.lastValuesRotaryPins[clockPin] == 1){
-						//console.log("CCW("+identifier+")")
-						self.sendNotificationsOfRotary(identifier, false)
-					}
-				}
+				value = 0
 			}
-		}
-	} else {
-		if (actionPinIsData){
-			self.lastValuesRotaryPins[dataPin] = dataValue
-		} else {
-			self.lastValuesRotaryPins[clockPin] = clockValue
-		}
+			console.log(self.name + ": Watched pin: " + curPin + " triggered with value "+value+"!");
+			self.sendNotificationsOfSinglePin(curPin, value);
+		})
 	}
   },
 
   registerRotary: function (identifier, dataPin, clockPin) {
 	const self = this
-	console.log(self.name + ": Registering rotary encoder: " + identifier)
-	self.lastActionsRotary[identifier] = 0
+	console.log(self.name + ": Registering rotary encoder: " + identifier + " with data pin "+dataPin+" and clock pin "+clockPin)
 
-	let curDebounce = 0
+	let curGPIOInfoData = self.gpioinfo["gpios"]["GPIO"+dataPin]
+	let curGPIOInfoClock = self.gpioinfo["gpios"]["GPIO"+clockPin]
 
-	self.lastValuesRotaryPins[String(dataPin)] = 1
-	self.lastValuesRotaryPins[String(clockPin)] = 1
-	self.lastMessuresCW[String(identifier)] = 0
-	self.lastMessuresCCW[String(identifier)] = 0
+	if ((typeof curGPIOInfoData !== "undefined") && (typeof curGPIOInfoClock !== "undefined")){
+		let curGPIOObjData = {chip: curGPIOInfoData[0], line:curGPIOInfoData[1]}
+		let curGPIOObjClock = {chip: curGPIOInfoClock[0], line:curGPIOInfoClock[1]}
 
-	if (typeof self.config[String(identifier)].delay === "undefined") {
-		self.config[String(identifier)].delay = 0;
-	}
-	if (typeof self.config[String(identifier)].delay_cw === "undefined") {
-		self.config[String(identifier)].delay_cw = self.config[String(identifier)].delay;
-	}
-	if (typeof self.config[String(identifier)].delay_ccw === "undefined") {
-		self.config[String(identifier)].delay_ccw = self.config[String(identifier)].delay;
-	}
+		self.lastActionsRotary[identifier] = 0
 
-	if (typeof self.config[String(identifier)].gpio_debounce !== "undefined"){
-		curDebounce = self.config[String(identifier)].gpio_debounce
-	}
+		self.lastMessuresCW[String(identifier)] = 0
+		self.lastMessuresCCW[String(identifier)] = 0
 
-	self.gpio[String(dataPin)] = new Gpio(dataPin, "in", "both", {
-		debounceTimeout: curDebounce
-	});
+		if (typeof self.config[String(identifier)].delay === "undefined") {
+			self.config[String(identifier)].delay = 0;
+		}
+		if (typeof self.config[String(identifier)].delay_cw === "undefined") {
+			self.config[String(identifier)].delay_cw = self.config[String(identifier)].delay;
+		}
+		if (typeof self.config[String(identifier)].delay_ccw === "undefined") {
+			self.config[String(identifier)].delay_ccw = self.config[String(identifier)].delay;
+		}
 
-	self.gpio[String(clockPin)] = new Gpio(clockPin, "in", "both", {
-		debounceTimeout: curDebounce
-	});
+		//based on https://arduinogetstarted.com/tutorials/arduino-rotary-encoder
+		let dataGpio = openGPIOChip.input(curGPIOObjData)
+		let clockWatch = openGPIOChip.watch(curGPIOObjClock, openGPIOEdge.Rising)
 
-	(function (rotary_identifier, gpio_data, gpio_clock, dataPin, clockPin) {
-		gpio_data.watch(function (err, value) {
-			if (err) {
-				console.log(err);
+		clockWatch.on('event', () => {
+			let curTimestamp = Date.now()
+			let curRotaryDelay = self.config[identifier].rotaryDelay || 5
+			if (curTimestamp - self.lastActionsRotary[identifier] > curRotaryDelay){
+				self.lastActionsRotary[identifier] = curTimestamp
+				if (dataGpio.value == true){
+					//data is High, knob got turned CCW by one
+					self.sendNotificationsOfRotary(identifier, false)
+				} else {
+					//data is Low, knob got turned CW by one
+					self.sendNotificationsOfRotary(identifier, true)
+				}
 			}
-			// console.log(
-			// 	self.name + ": Watched pin: " + dataPin + " triggered with value "+value+"!"
-			// );
-			let clockPinValue = self.gpio[String(clockPin)].readSync()
-			self.evaluateRotaryResults(rotary_identifier, dataPin, clockPin, value, clockPinValue, true)
-		});
-
-		gpio_clock.watch(function (err, value) {
-			if (err) {
-				console.log(err);
-			}
-			// console.log(
-			// 	self.name + ": Watched pin: " + clockPin + " triggered with value "+value+"!"
-			// );
-			let dataPinValue = self.gpio[String(dataPin)].readSync()
-			self.evaluateRotaryResults(rotary_identifier, dataPin, clockPin, dataPinValue, value, false)
-		});
-	})(String(identifier), self.gpio[String(dataPin)], self.gpio[String(clockPin)], dataPin, clockPin);
+		})
+	}
   },
 
   socketNotificationReceived: function (notification, payload) {
@@ -448,26 +392,23 @@ module.exports = NodeHelper.create({
         ){
           console.log(self.name + ": DEPRECATION WARNING: Your config of pin "+curPin+" uses the old, deprecated syntax for configuration. Please change to the new \"notification_low\" and \"notification_high\" arrays as the old syntax handling may be removed in future versions!")
         }
-      }
 
-      if (Gpio.accessible) {
-        self.gpio = [];
-        for (var curPinConfStr in self.config) {
+		if (( typeof self.config[String(curPin)].gpio_debounce !== "undefined" )
+        ){
+          console.log(self.name + ": WARNING: Your config of pin "+curPin+" uses \"gpio_debounce\". This option has been removed with version 0.2.0 of the module and has no longer any effect. Checkout the delay options instead!")
+        }
+      }
+		self.gpio = [];
+		for (var curPinConfStr in self.config) {
 			if (curPinConfStr.indexOf(",") == -1) {
 				self.registerSinglePin(curPinConfStr)
 			} else {
 				let curPinConfArr = curPinConfStr.split(",")
 				self.registerRotary(curPinConfStr, curPinConfArr[0], curPinConfArr[1])
 			}
-        }
-      } else {
-        console.log(
-          self.name +
-            ": Skipping Pin registration because GPIO is not acessible!"
-        );
-      }
+		}
 
-      self.started = true;
+      	self.started = true;
     } else if (notification === "GPIO_SEND_NOTIFICATIONS") {
       if (payload.pins) {
         let curLength = payload.pins.length;

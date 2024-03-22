@@ -110,19 +110,17 @@ The three (two) new modules need to be configured as the original modules of Mag
 
 ### MMM-GPIO-Notifications
 
-The goal of this tutorial is to send a "SCREEN_ON" notification each time the PIR sensor triggers GPIO4 (HIGH level). The payload of the notification will be set to "'forced': false" because the MMM-Screen-Powersave-Notification supports turning the screen off (with other sensors) by force and ignore SCREEN_ON notifications. We use a "gpio_debounce" value of 0 for this type of sensor. Debouncing is more relevant for other types of sensors (like buttons).
-My PIR sensor triggers every 5 seconds. I do not want to send a notification that often. Thats why i configured a "delay" of 10000 milliseconds. This option has be introduced with version 0.0.2 (2020-03-28) of this module. Make sure to run the latest version.
+The goal of this tutorial is to send a "SCREEN_ON" notification each time the PIR sensor triggers GPIO4 (HIGH level). The payload of the notification will be set to "'forced': false" because the MMM-Screen-Powersave-Notification supports turning the screen off (with other sensors) by force and ignore SCREEN_ON notifications. My PIR sensor triggers every 5 seconds. I do not want to send a notification that often. Thats why i configured a "delay" of 10000 milliseconds. This option has be introduced with version 0.0.2 (2020-03-28) of this module. Make sure to run the latest version.
 
 ```json5
-    { 
+    {
         module: 'MMM-GPIO-Notifications',
         config: {
             '4': {
-                gpio_debounce: 0,
                 delay: 10000,
                 notifications_high: [
-                    { 
-                        notification: 'SCREEN_ON', 
+                    {
+                        notification: 'SCREEN_ON',
                         payload: { 'forced': false }
                     },
                 ]
