@@ -20,6 +20,7 @@ Hint: If you use the module in a container (i.e. docker) setup please skip this 
     cd ~/MagicMirror/modules
     git clone https://github.com/Tom-Hirschberger/MMM-GPIO-Notifications.git
     cd MMM-GPIO-Notifications
+    ./preinstall
     npm install
 ```
 
