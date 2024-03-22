@@ -117,18 +117,17 @@ Die drei (zwei) Module werden wie die Orginal-Module von MagicMirror² über die
 
 ### MMM-GPIO-Notifications
 
-Unser Ziel ist es, dass jedes mal, wenn der PIR-Sensor die Trigger-Leitung (GPIO4) auf "HIGH" setzt eine "SCREEN_ON" Notification gesendet wird. Die Payload wird hier auf "'forced': false" gesetzt, weil MMM-Screen-Powersave-Notification theoretisch über die Möglichkeit verfügt, den Minitor z.B. über einen anderen Sensor permanent auszuschalten und "SCREEN_ON" ohne "force" dann zu ignorieren. Für den PIR-Sensor können wir den "gpio_debounce"-Wert auf 0 setzten. Debounce ist für andere Sensor-Typen wie z.B. Buttons interessanter. Mein PIR-Sensor hat reagiert ca. alle 5 Sekunden. Ich möchte allerdings nicht jedes mal eine Notification senden. Deswegen setzte ich mit "delay" eine Pause von 10000 Millisekunden, bis das nächste mal eine gesendet wird. Diese Option wurde mit Version 0.0.2 vom 28.03.2020 eingeführt, es sollte die aktuelle Version des Moduls verwendet wird.
+Unser Ziel ist es, dass jedes mal, wenn der PIR-Sensor die Trigger-Leitung (GPIO4) auf "HIGH" setzt eine "SCREEN_ON" Notification gesendet wird. Die Payload wird hier auf "'forced': false" gesetzt, weil MMM-Screen-Powersave-Notification theoretisch über die Möglichkeit verfügt, den Minitor z.B. über einen anderen Sensor permanent auszuschalten und "SCREEN_ON" ohne "force" dann zu ignorieren. Mein PIR-Sensor reagiert ca. alle 5 Sekunden. Ich möchte allerdings nicht jedes mal eine Notification senden. Deswegen setzte ich mit "delay" eine Pause von 10000 Millisekunden, bis das nächste mal eine gesendet wird. Diese Option wurde mit Version 0.0.2 vom 28.03.2020 eingeführt, es sollte die aktuelle Version des Moduls verwendet wird.
 
 ```json5
-    { 
+    {
         module: 'MMM-GPIO-Notifications',
         config: {
             '4': {
-                gpio_debounce: 0,
                 delay: 10000,
                 notifications_high: [
-                    { 
-                        notification: 'SCREEN_ON', 
+                    {
+                        notification: 'SCREEN_ON',
                         payload: { 'forced': false }
                     },
                 ]
