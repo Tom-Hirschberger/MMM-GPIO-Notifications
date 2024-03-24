@@ -9,6 +9,8 @@ As of version 0.1.0 of the module it is possible to use rotary encoders, too. In
 
 As with version 0.2.0 of the module i need to change to a different library and so the `gpio_debounce` option is no longer support. Use the delay options instead!
 
+**If the module is unable to register a GPIO i.e. cause it is used by a other program already MagicMirror will quit. There is no way to catch this exception so be careful to only use free pins. Use the `gpioinfo` command to check for unused GPIOs.**
+
 **I wrote an [english](https://www.github.com/Tom-Hirschberger/MMM-GPIO-Notifications/tree/master/examples%2FHC-SR501%2FHC-SR501-GPIO4-README-EN.md) and an [german](https://www.github.com/Tom-Hirschberger/MMM-GPIO-Notifications/tree/master/examples%2FHC-SR501%2FHC-SR501-GPIO4-README-DE.md) tutorial on howto connect an HC-SR501 PIR sensor and use this module in combination with [MMM-Screen-Powersave-Notifications](https://github.com/Tom-Hirschberger/MMM-Screen-Powersave-Notification) to implement an auto-on/auto-off for the screen**
 
 ## Installation
@@ -27,6 +29,8 @@ Hint: If you use the module in a container (i.e. docker) setup please skip this 
 ## Setup in a container
 
 As of version 0.2.0 of the module you will need a container image which contains the "lipgpiod-dev" and "gpiod" package. The installation will fail if they are not present!
+
+The image of karsten13 will contain the libs in future releases. Currently (2024-03-24) you will need to use the develop tag.
 
 If you want to use the module within a container it will need some preperation.
 First make sure `python3` is available in the container. It is needed only during the installation (`npm install`) of the module but not during runtime.
