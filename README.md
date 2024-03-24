@@ -26,6 +26,8 @@ Hint: If you use the module in a container (i.e. docker) setup please skip this 
 
 ## Setup in a container
 
+As of version 0.2.0 of the module you will need a container image which contains the "lipgpiod-dev" and "gpiod" package. The installation will fail if they are not present!
+
 If you want to use the module within a container it will need some preperation.
 First make sure `python3` is available in the container. It is needed only during the installation (`npm install`) of the module but not during runtime.
 
@@ -43,27 +45,27 @@ in the `docker-compose.yml" file. Please change it to:
 image: karsten13/magicmirror:fat
 ```
 
-Next you will need to make sure that you map `/sys` inside the container.
+Next you will need to make sure that you map `/dev` inside the container and run the container in privileged mode.
 
-If you started the container without `docker-compose` simply add the following option to the command `docker run` command:
+If you started the container without `docker-compose` simply add the following options to the command `docker run` command:
 
 ```bash
--v /sys:/sys
+-v /dev:/dev --privileged
 ```
 
 It then will look something like:
 
 ```bash
-docker run -it --rm --name mymirror \
+docker run --privileged -it --rm --name mymirror \
  -v ${HOME}/mm/modules:/opt/magic_mirror/modules \
  -v ${HOME}/mm/config:/opt/magic_mirror/config \
  -v ${HOME}/mm/css:/opt/magic_mirror/css \
- -v /sys:/sys \
+ -v /dev:/dev \
  -p 8080:8080 \
  karsten13/magicmirror:fat npm run server
 ```
 
-In case you use `docker-compose` to start your mirror you need to add a addtional volume to the `docker-compose.yml`.
+In case you use `docker-compose` to start your mirror you need to add a additional volume and the privileged option to the `docker-compose.yml`.
 It then will look something like:
 
 ```yaml
@@ -72,6 +74,7 @@ version: '3'
 services:
   magicmirror:
     container_name: mm
+    privileged: true
     image: karsten13/magicmirror:latest
     ports:
       - "8080:8080"
@@ -79,7 +82,7 @@ services:
       - ../mounts/config:/opt/magic_mirror/config
       - ../mounts/modules:/opt/magic_mirror/modules
       - ../mounts/css:/opt/magic_mirror/css
-      - /sys:/sys
+      - /dev:/dev
     restart: unless-stopped
     command:
       - npm
