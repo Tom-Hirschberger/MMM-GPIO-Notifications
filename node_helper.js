@@ -292,11 +292,26 @@ module.exports = NodeHelper.create({
 	}
   },
 
+  getGPIONameOfPin: function(curPin){
+	const self = this
+	if(typeof curPin === 'number'){
+		return ["GPIO"+curPin,self.gpioinfo["gpios"]["GPIO"+curPin]]
+	} else {
+		try {
+			return ["GPIO"+parseInt(curPin), self.gpioinfo["gpios"]["GPIO"+parseInt(curPin)]]
+		} catch {
+			return [curPin, self.gpioinfo["gpios"][curPin]]
+		}
+	}
+  },
+
   registerSinglePin: function(curPin) {
 	const self = this
-	console.log(self.name + ": Registering pin: " + curPin)
+	console.log(self.name + ": Trying to registering pin: " + curPin)
 
-	let curGPIOInfo = self.gpioinfo["gpios"]["GPIO"+curPin]
+	let infoObj = self.getGPIONameOfPin(curPin)
+	console.log(self.name + ": Using chip and lane info of GPIO: " + infoObj[0])
+	let curGPIOInfo = infoObj[1]
 
 	if (typeof curGPIOInfo !== "undefined"){
 		let curGPIOObj = {chip: curGPIOInfo[0], line:curGPIOInfo[1]}
@@ -331,15 +346,23 @@ module.exports = NodeHelper.create({
 			console.log(self.name + ": Watched pin: " + curPin + " triggered with value "+value+"!");
 			self.sendNotificationsOfSinglePin(curPin, value);
 		})
+		console.log(self.name + ": Successfully registered pin: " + curPin)
+	} else {
+		console.log(self.name + ": Failed to register pin: " + curPin+" cause we could not find any information about it in the gpioinfo.json file!")
 	}
   },
 
   registerRotary: function (identifier, dataPin, clockPin) {
 	const self = this
-	console.log(self.name + ": Registering rotary encoder: " + identifier + " with data pin "+dataPin+" and clock pin "+clockPin)
+	console.log(self.name + ": Trying to registering rotary encoder: " + identifier + " with data pin "+dataPin+" and clock pin "+clockPin)
 
-	let curGPIOInfoData = self.gpioinfo["gpios"]["GPIO"+dataPin]
-	let curGPIOInfoClock = self.gpioinfo["gpios"]["GPIO"+clockPin]
+	let curGPIOInfoDataObj = self.getGPIONameOfPin(dataPin)
+	console.log(self.name + ": Using chip and lane info of GPIO: " + curGPIOInfoDataObj[0]+" for data pin.")
+	let curGPIOInfoData = curGPIOInfoDataObj[1]
+
+	let curGPIOInfoClockObj = self.getGPIONameOfPin(clockPin)
+	console.log(self.name + ": Using chip and lane info of GPIO: " + curGPIOInfoClockObj[0]+" for clock pin.")
+	let curGPIOInfoClock = curGPIOInfoClockObj[1]
 
 	if ((typeof curGPIOInfoData !== "undefined") && (typeof curGPIOInfoClock !== "undefined")){
 		let curGPIOObjData = {chip: curGPIOInfoData[0], line:curGPIOInfoData[1]}
@@ -378,6 +401,15 @@ module.exports = NodeHelper.create({
 				}
 			}
 		})
+		console.log(self.name + ": Successfully registered rotary encoder: " + identifier)
+	} else {
+		if (typeof curGPIOInfoData !== "undefined") {
+			console.log(self.name + ": Failed to register pin: " + dataPin+" cause we could not find any information about it in the gpioinfo.json file!")	
+		}
+
+		if (typeof curGPIOInfoClock !== "undefined") {
+			console.log(self.name + ": Failed to register pin: " + clockPin+" cause we could not find any information about it in the gpioinfo.json file!")	
+		}
 	}
   },
 
