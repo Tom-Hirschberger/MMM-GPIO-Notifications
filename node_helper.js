@@ -7,7 +7,7 @@
 
 const NodeHelper = require("node_helper");
 const OpenGPIO = require("opengpio")
-const openGPIOChip = OpenGPIO.Default
+let openGPIOChip = OpenGPIO.Default
 const openGPIOEdge = OpenGPIO.Edge
 const fs = require('fs')
 const path = require('path')
@@ -24,7 +24,50 @@ module.exports = NodeHelper.create({
 	self.lastMessuresCW = {}
     self.lastMessuresCCW = {}
 	self.lastActionsRotary = {}
-	self.gpioinfo = JSON.parse(fs.readFileSync(gpioInfoFile))
+	self.usingDefaultDevice = true
+	self.registeredPins = {}
+	self.namingSchema = "Default"
+
+	if (fs.existsSync('/proc/device-tree/model')){
+		let fullModelName = fs.readFileSync('/proc/device-tree/model').toString()
+		if (fullModelName.startsWith("Raspberry Pi")){
+			let piVersion = fullModelName.substring(12)
+			piVersion = piVersion.replace("Model", "")
+			piVersion = piVersion.substring(0, piVersion.indexOf("Rev")-1).replaceAll(" ","")
+			piVersion = "RaspberryPi_"+piVersion
+			openGPIOChip = OpenGPIO[piVersion]
+			if (typeof openGPIOChip === "undefined"){
+				console.log("Could not find any device information for "+piVersion+". Using information of gpioinfo.json!")
+				openGPIOChip = OpenGPIO.Default
+			} else {
+				console.log("Using naming schema of "+piVersion+"!")
+				self.namingSchema = piVersion
+				self.usingDefaultDevice = false
+			}
+		} else {
+			if (typeof OpenGPIO[fullModelName] !== "undefined"){
+				openGPIOChip = OpenGPIO[fullModelName]
+				self.namingSchema = fullModelName
+			} else {
+				openGPIOChip = OpenGPIO.Default
+				console.log("Could not find any device information for model: "+fullModelName+". Using information of gpioinfo.json!")
+			}
+		}
+	} else {
+		openGPIOChip = OpenGPIO.Default
+		console.log("Could not find any device information. Using information of gpioinfo.json!")
+	}
+
+	if (self.usingDefaultDevice){
+		self.gpioinfo = JSON.parse(fs.readFileSync(gpioInfoFile))
+	}
+  },
+
+  stop: function(){
+	for(let curPin of self.registeredPins){
+		console.log("Removing handler of pin: "+curPin)
+		curPin.stop()
+	}
   },
 
   sendAllNotificationsOfSinglePins: function () {
@@ -294,27 +337,44 @@ module.exports = NodeHelper.create({
 
   getGPIONameOfPin: function(curPin){
 	const self = this
+	let name = null
 	if(typeof curPin === 'number'){
-		return ["GPIO"+curPin,self.gpioinfo["gpios"]["GPIO"+curPin]]
+		name = "GPIO"+curPin
 	} else {
 		try {
-			return ["GPIO"+parseInt(curPin), self.gpioinfo["gpios"]["GPIO"+parseInt(curPin)]]
+			name = "GPIO"+parseInt(curPin)
 		} catch {
-			return [curPin, self.gpioinfo["gpios"][curPin]]
+			name = curPin
 		}
 	}
+	return name
+  },
+
+  getGPIOChipAndLaneInfoOfPinName: function(curPinName){
+	const self = this
+	let info = null
+	if (self.usingDefaultDevice){
+		if (typeof self.gpioinfo["gpios"][curPinName] !== "undefined"){
+			info = {chip: self.gpioinfo["gpios"][curPinName][0], lane: self.gpioinfo["gpios"][curPinName][1]}
+		}
+	} else {
+		if (typeof openGPIOChip.bcm[curPinName] !== "undefined"){
+			info = openGPIOChip.bcm[curPinName]
+		}
+	}
+
+	return info
   },
 
   registerSinglePin: function(curPin) {
 	const self = this
 	console.log(self.name + ": Trying to registering pin: " + curPin)
 
-	let infoObj = self.getGPIONameOfPin(curPin)
-	console.log(self.name + ": Using chip and lane info of GPIO: " + infoObj[0])
-	let curGPIOInfo = infoObj[1]
+	let pinName = self.getGPIONameOfPin(curPin)
+	let curGPIOInfo = self.getGPIOChipAndLaneInfoOfPinName(pinName)
 
-	if (typeof curGPIOInfo !== "undefined"){
-		let curGPIOObj = {chip: curGPIOInfo[0], line:curGPIOInfo[1]}
+	if (curGPIOInfo != null){
+		console.log(self.name + ": Using chip ("+curGPIOInfo.chip+") and line ("+curGPIOInfo.line+") info of " + pinName)
 		self.lastMessuresLow[String(curPin)] = -1;
 		self.lastMessuresHigh[String(curPin)] = -1;
 		if (typeof self.config[String(curPin)].delay === "undefined") {
@@ -335,20 +395,26 @@ module.exports = NodeHelper.create({
 			self.name + ": Watched pin: " + curPin + " has high state delay of "+self.config[String(curPin)].delay_high+"!"
 		);
 
-		let watch = openGPIOChip.watch(curGPIOObj, openGPIOEdge.Both)
+		try {
+			let watch = openGPIOChip.watch(curGPIOInfo, openGPIOEdge.Both)
+			self.registeredPins[curPin] = watch
 
-		watch.on('event', (value) => {
-			if (value){
-				value = 1
-			} else {
-				value = 0
-			}
-			console.log(self.name + ": Watched pin: " + curPin + " triggered with value "+value+"!");
-			self.sendNotificationsOfSinglePin(curPin, value);
-		})
-		console.log(self.name + ": Successfully registered pin: " + curPin)
+			watch.on('event', (value) => {
+				if (value){
+					value = 1
+				} else {
+					value = 0
+				}
+				console.log(self.name + ": Watched pin: " + curPin + " triggered with value "+value+"!");
+				self.sendNotificationsOfSinglePin(curPin, value);
+			})
+			console.log(self.name + ": Successfully registered pin: " + curPin)
+		} catch {
+			console.log(self.name + ": Unable to register pin: "+curPin+". Maybe it is already used by a other program!")
+		}
+
 	} else {
-		console.log(self.name + ": Failed to register pin: " + curPin+" cause we could not find any information about it in the gpioinfo.json file!")
+		console.log(self.name + ": Failed to register pin: " + curPin+" cause we could not find any information about the gpio chip and lane to use!")
 	}
   },
 
@@ -356,18 +422,15 @@ module.exports = NodeHelper.create({
 	const self = this
 	console.log(self.name + ": Trying to registering rotary encoder: " + identifier + " with data pin "+dataPin+" and clock pin "+clockPin)
 
-	let curGPIOInfoDataObj = self.getGPIONameOfPin(dataPin)
-	console.log(self.name + ": Using chip and lane info of GPIO: " + curGPIOInfoDataObj[0]+" for data pin.")
-	let curGPIOInfoData = curGPIOInfoDataObj[1]
+	let dataPinName = self.getGPIONameOfPin(dataPin)
+	let clockPinName = self.getGPIONameOfPin(clockPin)
 
-	let curGPIOInfoClockObj = self.getGPIONameOfPin(clockPin)
-	console.log(self.name + ": Using chip and lane info of GPIO: " + curGPIOInfoClockObj[0]+" for clock pin.")
-	let curGPIOInfoClock = curGPIOInfoClockObj[1]
+	let curGPIODataInfo = self.getGPIOChipAndLaneInfoOfPinName(dataPinName)
+	let curGPIOClockInfo = self.getGPIOChipAndLaneInfoOfPinName(clockPinName)
 
-	if ((typeof curGPIOInfoData !== "undefined") && (typeof curGPIOInfoClock !== "undefined")){
-		let curGPIOObjData = {chip: curGPIOInfoData[0], line:curGPIOInfoData[1]}
-		let curGPIOObjClock = {chip: curGPIOInfoClock[0], line:curGPIOInfoClock[1]}
-
+	if ((curGPIODataInfo != null) && (curGPIOClockInfo != null)){
+		console.log(self.name + ": Using chip ("+curGPIODataInfo.chip+") and line ("+curGPIODataInfo.line+") info of " + dataPinName+" as data pin.")
+		console.log(self.name + ": Using chip ("+curGPIOClockInfo.chip+") and line ("+curGPIOClockInfo.line+") info of " + clockPinName+" as clock pin.")
 		self.lastActionsRotary[identifier] = 0
 
 		self.lastMessuresCW[String(identifier)] = 0
@@ -384,31 +447,46 @@ module.exports = NodeHelper.create({
 		}
 
 		//based on https://arduinogetstarted.com/tutorials/arduino-rotary-encoder
-		let dataGpio = openGPIOChip.input(curGPIOObjData)
-		let clockWatch = openGPIOChip.watch(curGPIOObjClock, openGPIOEdge.Rising)
+		let dataGpio
+		try {
+			dataGpio = openGPIOChip.input(curGPIODataInfo)
+			self.registeredPins[dataPin] = dataGpio
+		} catch {
+			dataGpio = null
+		}
+		if (dataGpio != null){
+			try {
+				let clockWatch = openGPIOChip.watch(curGPIOClockInfo, openGPIOEdge.Rising)
+				self.registeredPins[clockPin] = clockWatch
 
-		clockWatch.on('event', () => {
-			let curTimestamp = Date.now()
-			let curRotaryDelay = self.config[identifier].rotaryDelay || 5
-			if (curTimestamp - self.lastActionsRotary[identifier] > curRotaryDelay){
-				self.lastActionsRotary[identifier] = curTimestamp
-				if (dataGpio.value == true){
-					//data is High, knob got turned CCW by one
-					self.sendNotificationsOfRotary(identifier, false)
-				} else {
-					//data is Low, knob got turned CW by one
-					self.sendNotificationsOfRotary(identifier, true)
-				}
+				clockWatch.on('event', () => {
+					let curTimestamp = Date.now()
+					let curRotaryDelay = self.config[identifier].rotaryDelay || 5
+					if (curTimestamp - self.lastActionsRotary[identifier] > curRotaryDelay){
+						self.lastActionsRotary[identifier] = curTimestamp
+						if (dataGpio.value == true){
+							//data is High, knob got turned CCW by one
+							self.sendNotificationsOfRotary(identifier, false)
+						} else {
+							//data is Low, knob got turned CW by one
+							self.sendNotificationsOfRotary(identifier, true)
+						}
+					}
+				})
+				console.log(self.name + ": Successfully registered rotary encoder: " + identifier)
+			} catch {
+				console.log(self.name + ": Unable to register dataPin: "+clockPin+" of rotary encoder: " + identifier+". Maybe it is already used by a other program!")
 			}
-		})
-		console.log(self.name + ": Successfully registered rotary encoder: " + identifier)
+		} else {
+			console.log(self.name + ": Unable to register dataPin: "+dataPin+" of rotary encoder: " + identifier+". Maybe it is already used by a other program!")
+		}
 	} else {
-		if (typeof curGPIOInfoData !== "undefined") {
-			console.log(self.name + ": Failed to register pin: " + dataPin+" cause we could not find any information about it in the gpioinfo.json file!")	
+		if (curGPIODataInfo == null) {
+			console.log(self.name + ": Failed to register pin: " + dataPin+" cause we could not find any information about the gpio chip and lane to use!")
 		}
 
-		if (typeof curGPIOInfoClock !== "undefined") {
-			console.log(self.name + ": Failed to register pin: " + clockPin+" cause we could not find any information about it in the gpioinfo.json file!")	
+		if (curGPIOClockInfo == null) {
+			console.log(self.name + ": Failed to register pin: " + clockPin+" cause we could not find any information about the gpio chip and lane to use!")
 		}
 	}
   },
@@ -416,6 +494,7 @@ module.exports = NodeHelper.create({
   socketNotificationReceived: function (notification, payload) {
     const self = this;
     if (notification === "CONFIG" && self.started === false) {
+	  console.log(self.name + ": Using naming schema "+self.namingSchema)
       self.config = payload;
 
       for (var curPin in self.config) {
