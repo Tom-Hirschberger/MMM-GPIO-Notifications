@@ -64,6 +64,7 @@ module.exports = NodeHelper.create({
   },
 
   stop: function(){
+	const self = this
 	for (let curPin in self.registeredPins){
 		console.log(self.name + ": Removing handler of pin: "+curPin)
 		self.registeredPins[curPin].stop()

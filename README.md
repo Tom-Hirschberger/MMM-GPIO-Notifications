@@ -7,9 +7,9 @@ As a new feature you can now set profiles for each notifcation. Because of this 
 
 As of version 0.1.0 of the module it is possible to use rotary encoders, too. Instead of one pin, two pins get configured (one data and one clock pin) which work together.
 
-As with version 0.2.0 of the module i need to change to a different library and so the `gpio_debounce` option is no longer support. Use the delay options instead!
+As with version 0.2.0 of the module i needed to change to a different library and so the `gpio_debounce` option is no longer supported. Use the delay options instead!
 
-**If the module is unable to register a GPIO i.e. cause it is used by a other program already MagicMirror will quit. There is no way to catch this exception so be careful to only use free pins. Use the `gpioinfo` command to check for unused GPIOs.**
+**If the module is unable to register a GPIO i.e. cause it is used by a other program it prints a message to the log now.**
 
 **I wrote an [english](https://www.github.com/Tom-Hirschberger/MMM-GPIO-Notifications/tree/master/examples%2FHC-SR501%2FHC-SR501-GPIO4-README-EN.md) and an [german](https://www.github.com/Tom-Hirschberger/MMM-GPIO-Notifications/tree/master/examples%2FHC-SR501%2FHC-SR501-GPIO4-README-DE.md) tutorial on howto connect an HC-SR501 PIR sensor and use this module in combination with [MMM-Screen-Powersave-Notifications](https://github.com/Tom-Hirschberger/MMM-Screen-Powersave-Notification) to implement an auto-on/auto-off for the screen**
 
@@ -30,7 +30,7 @@ Hint: If you use the module in a container (i.e. docker) setup please skip this 
 
 As of version 0.2.0 of the module you will need a container image which contains the "lipgpiod-dev" and "gpiod" package. The installation will fail if they are not present!
 
-The image of karsten13 will contain the libs in future releases. Currently (2024-03-24) you will need to use the develop tag.
+The image of karsten13 will contains with all releases after 2024-03-24. You will need the fat tag to install the module and run the converter script proberly. 
 
 If you want to use the module within a container it will need some preperation.
 First make sure `python3` is available in the container. It is needed only during the installation (`npm install`) of the module but not during runtime.
@@ -49,12 +49,12 @@ in the `docker-compose.yml" file. Please change it to:
 image: karsten13/magicmirror:fat
 ```
 
-Next you will need to make sure that you map `/dev` inside the container and run the container in privileged mode.
+Next you will need to make sure that you map `/dev` and `sys` inside the container and run the container in privileged mode.
 
 If you started the container without `docker-compose` simply add the following options to the command `docker run` command:
 
 ```bash
--v /dev:/dev --privileged
+-v /dev:/dev -v /sys:/sys --privileged
 ```
 
 It then will look something like:
@@ -65,6 +65,7 @@ docker run --privileged -it --rm --name mymirror \
  -v ${HOME}/mm/config:/opt/magic_mirror/config \
  -v ${HOME}/mm/css:/opt/magic_mirror/css \
  -v /dev:/dev \
+ -v /sys:/sys \
  -p 8080:8080 \
  karsten13/magicmirror:fat npm run server
 ```
@@ -87,6 +88,7 @@ services:
       - ../mounts/modules:/opt/magic_mirror/modules
       - ../mounts/css:/opt/magic_mirror/css
       - /dev:/dev
+      - /sys:/sys
     restart: unless-stopped
     command:
       - npm
