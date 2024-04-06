@@ -64,10 +64,10 @@ module.exports = NodeHelper.create({
   },
 
   stop: function(){
- const self = this
-	for(let curPin of self.registeredPins){
-		console.log("Removing handler of pin: "+curPin)
-		curPin.stop()
+	const self = this
+	for (let curPin in self.registeredPins){
+		console.log(self.name + ": Removing handler of pin: "+curPin)
+		self.registeredPins[curPin].stop()
 	}
   },
 
@@ -521,6 +521,12 @@ module.exports = NodeHelper.create({
 		}
 
       	self.started = true;
+		// console.log("Pins to de-register during stop: ")
+
+		// for (let curPin in self.registeredPins){
+		// 	console.log("  "+curPin)
+		// 	console.log(JSON.stringify(self.registeredPins[curPin], null, 2))
+		// }
     } else if (notification === "GPIO_SEND_NOTIFICATIONS") {
       if (payload.pins) {
         let curLength = payload.pins.length;
