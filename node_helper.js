@@ -351,12 +351,12 @@ module.exports = NodeHelper.create({
 	return name
   },
 
-  getGPIOChipAndLaneInfoOfPinName: function(curPinName){
+  getGPIOChipAndLineInfoOfPinName: function(curPinName){
 	const self = this
 	let info = null
 	if (self.usingDefaultDevice){
 		if (typeof self.gpioinfo["gpios"][curPinName] !== "undefined"){
-			info = {chip: self.gpioinfo["gpios"][curPinName][0], lane: self.gpioinfo["gpios"][curPinName][1]}
+			info = {chip: self.gpioinfo["gpios"][curPinName][0], line: self.gpioinfo["gpios"][curPinName][1]}
 		}
 	} else {
 		if (typeof openGPIOChip.bcm[curPinName] !== "undefined"){
@@ -372,7 +372,7 @@ module.exports = NodeHelper.create({
 	console.log(self.name + ": Trying to registering pin: " + curPin)
 
 	let pinName = self.getGPIONameOfPin(curPin)
-	let curGPIOInfo = self.getGPIOChipAndLaneInfoOfPinName(pinName)
+	let curGPIOInfo = self.getGPIOChipAndLineInfoOfPinName(pinName)
 
 	if (curGPIOInfo != null){
 		console.log(self.name + ": Using chip ("+curGPIOInfo.chip+") and line ("+curGPIOInfo.line+") info of " + pinName)
@@ -426,8 +426,8 @@ module.exports = NodeHelper.create({
 	let dataPinName = self.getGPIONameOfPin(dataPin)
 	let clockPinName = self.getGPIONameOfPin(clockPin)
 
-	let curGPIODataInfo = self.getGPIOChipAndLaneInfoOfPinName(dataPinName)
-	let curGPIOClockInfo = self.getGPIOChipAndLaneInfoOfPinName(clockPinName)
+	let curGPIODataInfo = self.getGPIOChipAndLineInfoOfPinName(dataPinName)
+	let curGPIOClockInfo = self.getGPIOChipAndLineInfoOfPinName(clockPinName)
 
 	if ((curGPIODataInfo != null) && (curGPIOClockInfo != null)){
 		console.log(self.name + ": Using chip ("+curGPIODataInfo.chip+") and line ("+curGPIODataInfo.line+") info of " + dataPinName+" as data pin.")
