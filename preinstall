@@ -35,7 +35,14 @@ else
 fi
 
 echo "Calling converter script to gather info about the gpio chips, lines and names..."
-./convertGpioInfo2Json.py
+
+/bin/env 2>/dev/null
+if [ $? -gt 0 ]
+then
+	python3 ./convertGpioInfo2Json.py
+else
+	./convertGpioInfo2Json.py
+fi
 
 if [ $? -gt 0 ]
 then
