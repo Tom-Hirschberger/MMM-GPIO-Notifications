@@ -213,5 +213,6 @@ In this example a rotary encoder with the following options is configured:
 | delay         | time in milliseconds till the notifications will be send again altough the rotary has been turned (either clockwise or counterclockwise). | Integer | 0 |
 | delay_cw         | time in milliseconds till the notifications of the rotary will be send again after it got turned clockwise. | Integer | the value of `delay` |
 | delay_ccw         | time in milliseconds till the notifications of the rotary will be send again after it got turned counterclockwise. | Integer | the value of `delay` |
+| rotaryDelay         | time in milliseconds till the notifications of the rotary will be send again after it got turned independent of the direction | Integer | the value of `delay` |
 | notifications_cw | A array of notifications that should be send if the rotary has been turned clockwise. | Array |
 | notifications_ccw | A array of notifications that should be send if the rotary has been turned counterclockwise. | Array |
