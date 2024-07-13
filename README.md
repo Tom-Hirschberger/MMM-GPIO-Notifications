@@ -172,7 +172,7 @@ As of version 0.0.9 of the module it is possible to configure different delays d
           '6,5': {
             delay_cw: 100,
             delay_ccw: 200,
-            rotary_delay: 5,
+            rotaryDelay: 5,
             notifications_ccw: [
               {
                 notification: 'PROFILE_INCREMENT_HORIZONTAL',
