@@ -101,6 +101,10 @@ services:
 
 As of version 0.1.0 of the module rotary encoders can be used. The configuration is slightly different between single pins and the one for rotary encoders. Cause of this i will provide two examples in two sections of this readme.
 
+### General
+
+* `forceInfoFileUsage`: If this option is set to true the `gpioinfo.json` file will be used instead of build in device information. If the registration of your pins fails although you are sure you configured the right ones you can try to change this option. Default: `false`
+
 ### Single GPIO pin
 
 To use the module insert it in the config.js file. Here is an example:
