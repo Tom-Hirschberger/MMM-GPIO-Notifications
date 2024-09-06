@@ -28,7 +28,12 @@ module.exports = NodeHelper.create({
 	self.registeredPins = {}
 	self.namingSchema = "Default"
 
-	if (fs.existsSync('/proc/device-tree/model')){
+	
+  },
+
+  configureGPIO: function(){
+	const self = this
+	if ((fs.existsSync('/proc/device-tree/model')) && !self.config.forceInfoFileUsage){
 		let fullModelName = fs.readFileSync('/proc/device-tree/model').toString()
 		if (fullModelName.startsWith("Raspberry Pi")){
 			let piVersion = fullModelName.substring(12)
@@ -55,7 +60,11 @@ module.exports = NodeHelper.create({
 		}
 	} else {
 		openGPIOChip = OpenGPIO.Default
-		console.log("Could not find any device information. Using information of gpioinfo.json!")
+		if (self.config.forceInfoFileUsage){
+			console.log("Force use of GPIO info file is configured. Using the information of gpioinfo.json instead of a specific device!")
+		} else {
+			console.log("Could not find any device information. Using information of gpioinfo.json!")
+		}
 	}
 
 	if (self.usingDefaultDevice){
@@ -498,6 +507,8 @@ module.exports = NodeHelper.create({
 	  console.log(self.name + ": Using naming schema "+self.namingSchema)
       self.config = payload;
 
+	  self.configureGPIO()
+
       for (var curPin in self.config) {
         if (( typeof self.config[String(curPin)].gpio_state !== "undefined" ) ||
             ( typeof self.config[String(curPin)].notifications !== "undefined" )
@@ -512,11 +523,13 @@ module.exports = NodeHelper.create({
       }
 		self.gpio = [];
 		for (var curPinConfStr in self.config) {
-			if (curPinConfStr.indexOf(",") == -1) {
-				self.registerSinglePin(curPinConfStr)
-			} else {
-				let curPinConfArr = curPinConfStr.split(",")
-				self.registerRotary(curPinConfStr, curPinConfArr[0], curPinConfArr[1])
+			if (curPinConfStr !== "forceInfoFileUsage"){
+				if (curPinConfStr.indexOf(",") == -1) {
+					self.registerSinglePin(curPinConfStr)
+				} else {
+					let curPinConfArr = curPinConfStr.split(",")
+					self.registerRotary(curPinConfStr, curPinConfArr[0], curPinConfArr[1])
+				}
 			}
 		}
 

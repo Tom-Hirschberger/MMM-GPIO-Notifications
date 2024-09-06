@@ -7,7 +7,9 @@
  * MIT Licensed.
  */
 Module.register("MMM-GPIO-Notifications", {
-  defaults: {},
+  defaults: {
+    forceInfoFileUsage: false
+  },
 
   start: function () {
     Log.info("Starting module: " + this.name);
