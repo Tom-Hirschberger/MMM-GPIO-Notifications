@@ -7,6 +7,7 @@
 
 const NodeHelper = require("node_helper");
 const OpenGPIO = require("opengpio")
+const Log = require("logger");
 let openGPIOChip = OpenGPIO.Default
 const openGPIOEdge = OpenGPIO.Edge
 const fs = require('fs')
@@ -42,10 +43,10 @@ module.exports = NodeHelper.create({
 			piVersion = "RaspberryPi_"+piVersion
 			openGPIOChip = OpenGPIO[piVersion]
 			if (typeof openGPIOChip === "undefined"){
-				console.log("Could not find any device information for "+piVersion+". Using information of gpioinfo.json!")
+				Log.log("Could not find any device information for "+piVersion+". Using information of gpioinfo.json!")
 				openGPIOChip = OpenGPIO.Default
 			} else {
-				console.log("Using naming schema of "+piVersion+"!")
+				Log.log("Using naming schema of "+piVersion+"!")
 				self.namingSchema = piVersion
 				self.usingDefaultDevice = false
 			}
@@ -55,15 +56,15 @@ module.exports = NodeHelper.create({
 				self.namingSchema = fullModelName
 			} else {
 				openGPIOChip = OpenGPIO.Default
-				console.log("Could not find any device information for model: "+fullModelName+". Using information of gpioinfo.json!")
+				Log.log("Could not find any device information for model: "+fullModelName+". Using information of gpioinfo.json!")
 			}
 		}
 	} else {
 		openGPIOChip = OpenGPIO.Default
 		if (self.config.forceInfoFileUsage){
-			console.log("Force use of GPIO info file is configured. Using the information of gpioinfo.json instead of a specific device!")
+			Log.log("Force use of GPIO info file is configured. Using the information of gpioinfo.json instead of a specific device!")
 		} else {
-			console.log("Could not find any device information. Using information of gpioinfo.json!")
+			Log.log("Could not find any device information. Using information of gpioinfo.json!")
 		}
 	}
 
@@ -75,7 +76,7 @@ module.exports = NodeHelper.create({
   stop: function(){
 	const self = this
 	for (let curPin in self.registeredPins){
-		console.log(self.name + ": Removing handler of pin: "+curPin)
+		Log.log(self.name + ": Removing handler of pin: "+curPin)
 		self.registeredPins[curPin].stop()
 	}
   },
@@ -83,7 +84,7 @@ module.exports = NodeHelper.create({
   sendAllNotificationsOfSinglePins: function () {
 	const self = this
 	let curTimestamp = Date.now()
-	console.log(self.name + ": Sending notifications of all pins...");
+	Log.log(self.name + ": Sending notifications of all pins...");
 	for (curPin in self.config) {
 		if (curPin.indexOf(",") == -1){
 			let curDelay
@@ -103,7 +104,7 @@ module.exports = NodeHelper.create({
 				curTimestamp - curMessures >
 				curDelay
 			) {
-				console.log(
+				Log.log(
 					self.name + ": Sending notifications of pin " + curPin + "..."
 				);
 
@@ -137,7 +138,7 @@ module.exports = NodeHelper.create({
 					curNotification.payload
 					);
 				} else {
-					console.log(
+					Log.log(
 					self.name +
 						": Skipped notifcation " +
 						curNotification.notification +
@@ -146,7 +147,7 @@ module.exports = NodeHelper.create({
 				}
 				}
 			} else {
-				console.log(
+				Log.log(
 				self.name +
 					": Skipping pin " +
 					curPin +
@@ -161,7 +162,7 @@ module.exports = NodeHelper.create({
     const self = this
     let curTimestamp = Date.now()
 
-	console.log(
+	Log.log(
 		self.name + ": Sending notifications of pin " + curPin + "..."
 	);
 
@@ -205,12 +206,12 @@ module.exports = NodeHelper.create({
 
 		if (curLength > 0) {
 			if (curValue === 0){
-			console.log(
+			Log.log(
 				self.name + ": Sending notifications for low state of pin " + curPin + "..."
 			);
 			self.lastMessuresLow[String(curPin)] = curTimestamp;
 			} else {
-			console.log(
+			Log.log(
 				self.name + ": Sending notifications for high state of pin " + curPin + "..."
 			);
 			self.lastMessuresHigh[String(curPin)] = curTimestamp;
@@ -218,13 +219,13 @@ module.exports = NodeHelper.create({
 
 			for (let i = 0; i < curLength; i++) {
 			let curNotification = toSendNotifications[i];
-			// console.log("CurProfile: " + self.currentProfile);
-			// console.log("CurProfileString: " + curNotification.profiles);
+			// Log.log("CurProfile: " + self.currentProfile);
+			// Log.log("CurProfileString: " + curNotification.profiles);
 			if (
 				typeof curNotification.profiles === "undefined" ||
 				self.currentProfilePattern.test(curNotification.profiles)
 			) {
-				// console.log(
+				// Log.log(
 				// 	self.name +
 				// 		": Sending notification: "+curNotification.notification
 				// );
@@ -233,7 +234,7 @@ module.exports = NodeHelper.create({
 					curNotification.payload
 				);
 			} else {
-				console.log(
+				Log.log(
 				self.name +
 					": Skipped notifcation " +
 					curNotification.notification +
@@ -242,12 +243,12 @@ module.exports = NodeHelper.create({
 			}
 			}
 		} else {
-			console.log(
+			Log.log(
 			self.name + ": Skipped notifications of pin " + curPin + " cause the state "+curValue+" has no notifications configured."
 			);
 		}
 	} else {
-		console.log(
+		Log.log(
 			self.name +
 			": Skipping pin " +
 			curPin +
@@ -259,9 +260,9 @@ module.exports = NodeHelper.create({
   sendNotificationsOfRotary: function (curRotary, directionCW) {
 	const self = this
 	if (directionCW){
-		console.log(self.name +": Send notifications of rotary: "+curRotary+" of direction clockwise")
+		Log.log(self.name +": Send notifications of rotary: "+curRotary+" of direction clockwise")
 	} else {
-		console.log(self.name +": Send notifications of rotary: "+curRotary+" of direction counterclockwise")
+		Log.log(self.name +": Send notifications of rotary: "+curRotary+" of direction counterclockwise")
 	}
 
 	let curTimestamp = Date.now()
@@ -301,13 +302,13 @@ module.exports = NodeHelper.create({
 		if (curLength > 0) {
 			for (let i = 0; i < curLength; i++) {
 				let curNotification = toSendNotifications[i];
-				// console.log("CurProfile: " + self.currentProfile);
-				// console.log("CurProfileString: " + curNotification.profiles);
+				// Log.log("CurProfile: " + self.currentProfile);
+				// Log.log("CurProfileString: " + curNotification.profiles);
 				if (
 					typeof curNotification.profiles === "undefined" ||
 					self.currentProfilePattern.test(curNotification.profiles)
 				) {
-					// console.log(
+					// Log.log(
 					// 	self.name +
 					// 		": Sending notification: "+curNotification.notification
 					// );
@@ -316,7 +317,7 @@ module.exports = NodeHelper.create({
 						curNotification.payload
 					);
 				} else {
-					console.log(
+					Log.log(
 					self.name +
 						": Skipped notifcation " +
 						curNotification.notification +
@@ -326,17 +327,17 @@ module.exports = NodeHelper.create({
 			}
 		} else {
 			if (directionCW){
-				console.log(
+				Log.log(
 					self.name + ": Skipped rotary " + curRotary + " cause clockwise direction has no notifications configured."
 				);
 			} else {
-				console.log(
+				Log.log(
 					self.name + ": Skipped rotary " + curRotary + " cause counterclockwise direction has no notifications configured."
 				);
 			}
 		}
 	} else {
-		console.log(
+		Log.log(
 			self.name +
 			": Skipping rotary " +
 			curRotary +
@@ -378,13 +379,13 @@ module.exports = NodeHelper.create({
 
   registerSinglePin: function(curPin) {
 	const self = this
-	console.log(self.name + ": Trying to registering pin: " + curPin)
+	Log.log(self.name + ": Trying to registering pin: " + curPin)
 
 	let pinName = self.getGPIONameOfPin(curPin)
 	let curGPIOInfo = self.getGPIOChipAndLineInfoOfPinName(pinName)
 
 	if (curGPIOInfo != null){
-		console.log(self.name + ": Using chip ("+curGPIOInfo.chip+") and line ("+curGPIOInfo.line+") info of " + pinName)
+		Log.log(self.name + ": Using chip ("+curGPIOInfo.chip+") and line ("+curGPIOInfo.line+") info of " + pinName)
 		self.lastMessuresLow[String(curPin)] = -1;
 		self.lastMessuresHigh[String(curPin)] = -1;
 		if (typeof self.config[String(curPin)].delay === "undefined") {
@@ -397,11 +398,11 @@ module.exports = NodeHelper.create({
 			self.config[String(curPin)].delay_low = self.config[String(curPin)].delay;
 		}
 
-		console.log(
+		Log.log(
 			self.name + ": Watched pin: " + curPin + " has low state delay of "+self.config[String(curPin)].delay_low+"!"
 		);
 
-		console.log(
+		Log.log(
 			self.name + ": Watched pin: " + curPin + " has high state delay of "+self.config[String(curPin)].delay_high+"!"
 		);
 
@@ -415,22 +416,22 @@ module.exports = NodeHelper.create({
 				} else {
 					value = 0
 				}
-				console.log(self.name + ": Watched pin: " + curPin + " triggered with value "+value+"!");
+				Log.log(self.name + ": Watched pin: " + curPin + " triggered with value "+value+"!");
 				self.sendNotificationsOfSinglePin(curPin, value);
 			})
-			console.log(self.name + ": Successfully registered pin: " + curPin)
+			Log.log(self.name + ": Successfully registered pin: " + curPin)
 		} catch {
-			console.log(self.name + ": Unable to register pin: "+curPin+". Maybe it is already used by a other program!")
+			Log.log(self.name + ": Unable to register pin: "+curPin+". Maybe it is already used by a other program!")
 		}
 
 	} else {
-		console.log(self.name + ": Failed to register pin: " + curPin+" cause we could not find any information about the gpio chip and lane to use!")
+		Log.log(self.name + ": Failed to register pin: " + curPin+" cause we could not find any information about the gpio chip and lane to use!")
 	}
   },
 
   registerRotary: function (identifier, dataPin, clockPin) {
 	const self = this
-	console.log(self.name + ": Trying to registering rotary encoder: " + identifier + " with data pin "+dataPin+" and clock pin "+clockPin)
+	Log.log(self.name + ": Trying to registering rotary encoder: " + identifier + " with data pin "+dataPin+" and clock pin "+clockPin)
 
 	let dataPinName = self.getGPIONameOfPin(dataPin)
 	let clockPinName = self.getGPIONameOfPin(clockPin)
@@ -439,8 +440,8 @@ module.exports = NodeHelper.create({
 	let curGPIOClockInfo = self.getGPIOChipAndLineInfoOfPinName(clockPinName)
 
 	if ((curGPIODataInfo != null) && (curGPIOClockInfo != null)){
-		console.log(self.name + ": Using chip ("+curGPIODataInfo.chip+") and line ("+curGPIODataInfo.line+") info of " + dataPinName+" as data pin.")
-		console.log(self.name + ": Using chip ("+curGPIOClockInfo.chip+") and line ("+curGPIOClockInfo.line+") info of " + clockPinName+" as clock pin.")
+		Log.log(self.name + ": Using chip ("+curGPIODataInfo.chip+") and line ("+curGPIODataInfo.line+") info of " + dataPinName+" as data pin.")
+		Log.log(self.name + ": Using chip ("+curGPIOClockInfo.chip+") and line ("+curGPIOClockInfo.line+") info of " + clockPinName+" as clock pin.")
 		self.lastActionsRotary[identifier] = 0
 
 		self.lastMessuresCW[String(identifier)] = 0
@@ -483,20 +484,20 @@ module.exports = NodeHelper.create({
 						}
 					}
 				})
-				console.log(self.name + ": Successfully registered rotary encoder: " + identifier)
+				Log.log(self.name + ": Successfully registered rotary encoder: " + identifier)
 			} catch {
-				console.log(self.name + ": Unable to register dataPin: "+clockPin+" of rotary encoder: " + identifier+". Maybe it is already used by a other program!")
+				Log.log(self.name + ": Unable to register dataPin: "+clockPin+" of rotary encoder: " + identifier+". Maybe it is already used by a other program!")
 			}
 		} else {
-			console.log(self.name + ": Unable to register dataPin: "+dataPin+" of rotary encoder: " + identifier+". Maybe it is already used by a other program!")
+			Log.log(self.name + ": Unable to register dataPin: "+dataPin+" of rotary encoder: " + identifier+". Maybe it is already used by a other program!")
 		}
 	} else {
 		if (curGPIODataInfo == null) {
-			console.log(self.name + ": Failed to register pin: " + dataPin+" cause we could not find any information about the gpio chip and lane to use!")
+			Log.log(self.name + ": Failed to register pin: " + dataPin+" cause we could not find any information about the gpio chip and lane to use!")
 		}
 
 		if (curGPIOClockInfo == null) {
-			console.log(self.name + ": Failed to register pin: " + clockPin+" cause we could not find any information about the gpio chip and lane to use!")
+			Log.log(self.name + ": Failed to register pin: " + clockPin+" cause we could not find any information about the gpio chip and lane to use!")
 		}
 	}
   },
@@ -504,7 +505,7 @@ module.exports = NodeHelper.create({
   socketNotificationReceived: function (notification, payload) {
     const self = this;
     if (notification === "CONFIG" && self.started === false) {
-	  console.log(self.name + ": Using naming schema "+self.namingSchema)
+	  Log.log(self.name + ": Using naming schema "+self.namingSchema)
       self.config = payload;
 
 	  self.configureGPIO()
@@ -513,12 +514,12 @@ module.exports = NodeHelper.create({
         if (( typeof self.config[String(curPin)].gpio_state !== "undefined" ) ||
             ( typeof self.config[String(curPin)].notifications !== "undefined" )
         ){
-          console.log(self.name + ": DEPRECATION WARNING: Your config of pin "+curPin+" uses the old, deprecated syntax for configuration. Please change to the new \"notification_low\" and \"notification_high\" arrays as the old syntax handling may be removed in future versions!")
+          Log.log(self.name + ": DEPRECATION WARNING: Your config of pin "+curPin+" uses the old, deprecated syntax for configuration. Please change to the new \"notification_low\" and \"notification_high\" arrays as the old syntax handling may be removed in future versions!")
         }
 
 		if (( typeof self.config[String(curPin)].gpio_debounce !== "undefined" )
         ){
-          console.log(self.name + ": WARNING: Your config of pin "+curPin+" uses \"gpio_debounce\". This option has been removed with version 0.2.0 of the module and has no longer any effect. Checkout the delay options instead!")
+          Log.log(self.name + ": WARNING: Your config of pin "+curPin+" uses \"gpio_debounce\". This option has been removed with version 0.2.0 of the module and has no longer any effect. Checkout the delay options instead!")
         }
       }
 		self.gpio = [];
@@ -534,11 +535,11 @@ module.exports = NodeHelper.create({
 		}
 
       	self.started = true;
-		// console.log("Pins to de-register during stop: ")
+		// Log.log("Pins to de-register during stop: ")
 
 		// for (let curPin in self.registeredPins){
-		// 	console.log("  "+curPin)
-		// 	console.log(JSON.stringify(self.registeredPins[curPin], null, 2))
+		// 	Log.log("  "+curPin)
+		// 	Log.log(JSON.stringify(self.registeredPins[curPin], null, 2))
 		// }
     } else if (notification === "GPIO_SEND_NOTIFICATIONS") {
       if (payload.pins) {
@@ -560,7 +561,7 @@ module.exports = NodeHelper.create({
         self.currentProfilePattern = new RegExp("\\b" + payload.to + "\\b");
       }
     } else {
-      console.log(this.name + ": Received Notification: " + notification);
+      Log.log(this.name + ": Received Notification: " + notification);
     }
   }
 });
