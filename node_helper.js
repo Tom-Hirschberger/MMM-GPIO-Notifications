@@ -352,9 +352,11 @@ module.exports = NodeHelper.create({
 	if(typeof curPin === 'number'){
 		name = "GPIO"+curPin
 	} else {
-		try {
+		if(typeof curPin === 'number'){
+			name = "GPIO"+curPin
+		} else if (!isNaN(parseInt(curPin))) {
 			name = "GPIO"+parseInt(curPin)
-		} catch {
+		} else {
 			name = curPin
 		}
 	}
