@@ -412,7 +412,7 @@ module.exports = NodeHelper.create({
 			let watch = openGPIOChip.watch(curGPIOInfo, openGPIOEdge.Both)
 			self.registeredPins[curPin] = watch
 
-			watch.on('event', (value) => {
+			watch.on('change', (value) => {
 				if (value){
 					value = 1
 				} else {
