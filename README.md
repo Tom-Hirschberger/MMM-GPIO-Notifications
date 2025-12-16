@@ -9,7 +9,7 @@ As of version 0.1.0 of the module it is possible to use rotary encoders, too. In
 
 As with version 0.2.0 of the module i needed to change to a different library and so the `gpio_debounce` option is no longer supported. Use the delay options instead!
 
-As of version 0.3.0 of the module it uses a newer version of the opengpio lib which may require to update your system
+As with version 0.3.0 of the module it uses a newer version of the underlying gpio lib (opengpio) will be used. Depending on your os version the correct package.json will be linked by the preinstall script
 
 **If the module is unable to register a GPIO i.e. cause it is used by a other program it prints a message to the log now.**
 
