@@ -1,5 +1,21 @@
 #!/bin/bash
 
+source /etc/os-release
+
+curPath=`readlink -f $0`
+curDir=`dirname $curPath`
+
+echo "DIR: $curDir"
+
+if [ $ID == "debian" ] && [ $VERSION_ID -lt 13 ]
+then
+	rm -f $curDir/package.json
+	ln -s $curDir/package-old.json $curDir/package.json
+else
+	rm -f $curDir/package.json
+	ln -s $curDir/package-new.json $curDir/package.json
+fi
+
 echo -n "Check for package libgpiod-dev and install if needed..."
 if [ `apt list --installed libgpiod-dev 2>/dev/null | grep -c libgpiod-dev` -lt 1 ]
 then
