@@ -10,10 +10,10 @@ echo "DIR: $curDir"
 if [ $ID == "debian" ] && [ $VERSION_ID -lt 13 ]
 then
 	rm -f $curDir/package.json
-	cp $curDir/package-old.json $curDir/package.json
+	ln -s $curDir/package-old.json $curDir/package.json
 else
 	rm -f $curDir/package.json
-	cp $curDir/package-new.json $curDir/package.json
+	ln -s $curDir/package-new.json $curDir/package.json
 fi
 
 echo -n "Check for package libgpiod-dev and install if needed..."
