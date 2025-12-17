@@ -9,7 +9,12 @@ echo "DIR: $curDir"
 
 if [ $ID == "debian" ] && [ $VERSION_ID -lt 13 ]
 then
-	git checkout --track origin/gpiod1.x
+	if [ `git branch --list | tr '\n' '#' | grep -cE "[[:space:]]gpiod1\.x#"` -gt 0 ]
+	then	
+		git checkout gpiod1.x
+	else
+		git checkout --track orgin/gpiod1.x
+	fi
 else
 	git checkout master
 fi
