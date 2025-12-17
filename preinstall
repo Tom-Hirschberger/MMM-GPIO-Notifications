@@ -1,5 +1,25 @@
 #!/bin/bash
 
+source /etc/os-release
+
+curPath=`readlink -f $0`
+curDir=`dirname $curPath`
+
+echo "DIR: $curDir"
+
+if [ $ID == "debian" ] && [ $VERSION_ID -lt 13 ]
+then
+	echo "OS version is debian lower 13.x. Will change to the gpiod1.x branch"
+	if [ `git branch --list | tr '\n' '#' | grep -cE "[[:space:]]gpiod1\.x#"` -gt 0 ]
+	then	
+		git checkout gpiod1.x
+	else
+		git checkout --track orgin/gpiod1.x
+	fi
+else
+	echo "OS version is either no debian or debian but newer/equal 13.x. Will keep the current branch"
+fi
+
 echo -n "Check for package libgpiod-dev and install if needed..."
 if [ `apt list --installed libgpiod-dev 2>/dev/null | grep -c libgpiod-dev` -lt 1 ]
 then

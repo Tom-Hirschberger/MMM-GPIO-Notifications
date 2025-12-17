@@ -1,6 +1,6 @@
 {
   "name": "MMM-GPIO-Notifications",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "description": "A module which sends notications based on GPIO events.",
   "main": "MMM-GPIO-Notifications.js",
   "devDependencies": {},
@@ -8,7 +8,7 @@
     "preinstall": "./preinstall"
   },
   "dependencies": {
-    "opengpio": "~1.0.13"
+    "opengpio": "~2.0.2"
   },
   "keywords": [
     "MagicMirror",

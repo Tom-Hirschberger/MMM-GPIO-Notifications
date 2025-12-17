@@ -9,6 +9,8 @@ As of version 0.1.0 of the module it is possible to use rotary encoders, too. In
 
 As with version 0.2.0 of the module i needed to change to a different library and so the `gpio_debounce` option is no longer supported. Use the delay options instead!
 
+As with version 0.3.0 of the module it uses a newer version of the underlying gpio lib (opengpio) will be used. Depending on your os version the correct package.json will be linked by the preinstall script
+
 **If the module is unable to register a GPIO i.e. cause it is used by a other program it prints a message to the log now.**
 
 **I wrote an [english](https://www.github.com/Tom-Hirschberger/MMM-GPIO-Notifications/tree/master/examples%2FHC-SR501%2FHC-SR501-GPIO4-README-EN.md) and an [german](https://www.github.com/Tom-Hirschberger/MMM-GPIO-Notifications/tree/master/examples%2FHC-SR501%2FHC-SR501-GPIO4-README-DE.md) tutorial on howto connect an HC-SR501 PIR sensor and use this module in combination with [MMM-Screen-Powersave-Notifications](https://github.com/Tom-Hirschberger/MMM-Screen-Powersave-Notification) to implement an auto-on/auto-off for the screen**
