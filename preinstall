@@ -9,9 +9,15 @@ echo "DIR: $curDir"
 
 if [ $ID == "debian" ] && [ $VERSION_ID -lt 13 ]
 then
-	git checkout --track origin/gpiod1.x
+	echo "OS version is debian lower 13.x. Will change to the gpiod1.x branch"
+	if [ `git branch --list | tr '\n' '#' | grep -cE "[[:space:]]gpiod1\.x#"` -gt 0 ]
+	then	
+		git checkout gpiod1.x
+	else
+		git checkout --track orgin/gpiod1.x
+	fi
 else
-	git checkout master
+	echo "OS version is either no debian or debian but newer/equal 13.x. Will keep the current branch"
 fi
 
 echo -n "Check for package libgpiod-dev and install if needed..."
