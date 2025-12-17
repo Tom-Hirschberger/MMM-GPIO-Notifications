@@ -8,7 +8,7 @@
     "preinstall": "./preinstall"
   },
   "dependencies": {
-    "opengpio": "~1.0.18"
+    "opengpio": "~2.0.2"
   },
   "keywords": [
     "MagicMirror",
