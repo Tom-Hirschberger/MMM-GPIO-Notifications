@@ -16,7 +16,7 @@ then
 	then
 		git checkout gpiod1.x
 	else
-		git checkout --track orgin/gpiod1.x
+		git checkout --track origin/gpiod1.x
 	fi
 else
 	echo "OS version is either no debian/raspbian or newer/equal 13.x. Will keep the current branch"
