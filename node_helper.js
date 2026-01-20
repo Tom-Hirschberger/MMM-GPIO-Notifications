@@ -472,7 +472,7 @@ module.exports = NodeHelper.create({
 				let clockWatch = openGPIOChip.watch(curGPIOClockInfo, openGPIOEdge.Rising)
 				self.registeredPins[clockPin] = clockWatch
 
-				clockWatch.on('event', () => {
+				clockWatch.on('change', () => {
 					let curTimestamp = Date.now()
 					let curRotaryDelay = self.config[identifier].rotaryDelay || 5
 					if (curTimestamp - self.lastActionsRotary[identifier] > curRotaryDelay){
