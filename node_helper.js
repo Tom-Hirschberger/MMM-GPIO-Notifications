@@ -469,7 +469,19 @@ module.exports = NodeHelper.create({
 		}
 		if (dataGpio != null){
 			try {
-				let clockWatch = openGPIOChip.watch(curGPIOClockInfo, openGPIOEdge.Rising)
+				clockIsRising = true
+				if (typeof self.config[identifier].clockIsRising !== "undefined"){
+					if (!self.config[identifier].clockIsRising){
+						clockIsRising = false
+					}
+				}
+
+				let clockWatch = null
+				if (clockIsRising){
+					clockWatch = openGPIOChip.watch(curGPIOClockInfo, openGPIOEdge.Rising)
+				} else {
+					clockWatch = openGPIOChip.watch(curGPIOClockInfo, openGPIOEdge.Falling)
+				}
 				self.registeredPins[clockPin] = clockWatch
 
 				clockWatch.on('change', () => {
