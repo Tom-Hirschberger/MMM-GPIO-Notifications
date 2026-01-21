@@ -470,8 +470,8 @@ module.exports = NodeHelper.create({
 		if (dataGpio != null){
 			try {
 				clockIsRising = true
-				if (typeof self.config[identifier].clockIsRising !== "undefined"){
-					if (!self.config[identifier].clockIsRising){
+				if (typeof self.config[identifier].clock_is_rising !== "undefined"){
+					if (!self.config[identifier].clock_is_rising){
 						clockIsRising = false
 					}
 				}
