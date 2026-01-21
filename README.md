@@ -220,5 +220,6 @@ In this example a rotary encoder with the following options is configured:
 | delay_cw         | time in milliseconds till the notifications of the rotary will be send again after it got turned clockwise. | Integer | the value of `delay` |
 | delay_ccw         | time in milliseconds till the notifications of the rotary will be send again after it got turned counterclockwise. | Integer | the value of `delay` |
 | rotaryDelay         | time in milliseconds till the notifications of the rotary will be send again after it got turned independent of the direction | Integer | the value of `delay` |
+| clock_is_rising       | Usually the clock pin of the rotary changes from low to high (the value is rising) when triggered. But there are some models with a falling behavoir. Try changing this value from `true` (default) to `false` if your rotary does not work with default settings | Boolean | `true` |
 | notifications_cw | A array of notifications that should be send if the rotary has been turned clockwise. | Array |
 | notifications_ccw | A array of notifications that should be send if the rotary has been turned counterclockwise. | Array |
